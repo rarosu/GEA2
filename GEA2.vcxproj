@@ -41,10 +41,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <OutDir>$(ProjectDir)Bin/$(Configuration)/</OutDir>
     <IntDir>$(ProjectDir)Obj/$(Configuration)/</IntDir>
+    <IncludePath>$(ProjectDir)/glew/include/GL/;$(ProjectDir)/SDL/include/;$(ProjectDir)/glm/glm/;$(ProjectDir)/AntTweakBar/include/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <OutDir>$(ProjectDir)Bin/$(Configuration)/</OutDir>
     <IntDir>$(ProjectDir)Obj/$(Configuration)/</IntDir>
+    <IncludePath>$(ProjectDir)/glew/include/GL/;$(ProjectDir)/SDL/include/;$(ProjectDir)/glm/glm/;$(ProjectDir)/AntTweakBar/include/;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -53,6 +55,7 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalDependencies>$(ProjectDir)/SDL/lib/x86/SDL2.lib;$(ProjectDir)/SDL/lib/x86/SDL2main.lib;$(ProjectDir)/glew/lib/glew32.lib;$(ProjectDir)/AntTweakBar/lib/AntTweakBar.lib;opengl32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -66,9 +69,11 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>$(ProjectDir)/SDL/lib/x86/SDL2.lib;$(ProjectDir)/SDL/lib/x86/SDL2main.lib;$(ProjectDir)/glew/lib/glew32.lib;$(ProjectDir)/AntTweakBar/lib/AntTweakBar.lib;opengl32.lib</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
