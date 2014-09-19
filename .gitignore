@@ -1,5 +1,4 @@
-Bin
-Obj
+build/
 *.sdf
 *.suo
 *.opensdf
