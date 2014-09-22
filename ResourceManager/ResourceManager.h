@@ -1,16 +1,37 @@
 #pragma once
 
+#ifdef ALL_PUBLIC
+	#define PUBLIC public
+	#define PRIVATE public
+	#define PROTECTED public
+#else
+	#define PUBLIC public
+	#define PRIVATE private
+	#define PROTECTED protected
+#endif
+
 #include <map>
 #include <string>
 #include <functional>
+
+// Forward declare
+class ResourceBase;
+
+template <typename T>
+class Resource;
+
+class ResourceManager;
 
 
 
 class ResourceBase
 {
-public:
-
-private:
+	template <typename T>
+	friend class Resource;
+PUBLIC:
+	ResourceBase();
+	virtual ~ResourceBase();
+PRIVATE:
 	int refCount;
 };
 
@@ -19,13 +40,22 @@ private:
 template <typename T>
 class Resource
 {
-public:
+PUBLIC:
 	Resource();
-	virtual ~Resource();
+	Resource(T* resource);
+	Resource(const Resource<T>& resource);
+	~Resource();
 
 	T* operator->();
 	T& operator*();
-private:
+	Resource<T>& operator=(T* resource);
+	Resource<T>& operator=(const Resource<T>& resource);
+
+	bool operator==(const T* resource) const;
+	bool operator==(const Resource<T>& resource) const;
+	bool operator!=(const T* resource) const;
+	bool operator!=(const Resource<T>& resource) const;
+PRIVATE:
 	ResourceBase* resource;
 };
 
@@ -33,18 +63,30 @@ private:
 
 class ResourceManager
 {
-public:
+PUBLIC:
 	template <typename T>
 	Resource<T> Load(const std::string& path, std::function<void()>& processor);
 
 	template <typename T>
 	Resource<T> Create(const std::string& name);
-private:
+PRIVATE:
 	// Map a hash to a resource.
-	std::map<size_t, ResourceBase> resources;
+	std::map<size_t, ResourceBase*> resources;
+	std::hash<std::string> stringHasher;
+	std::hash<size_t> intHasher;
 };
 
 
+
+#pragma region ResourceBase
+
+ResourceBase::ResourceBase()
+	: refCount(0) {}
+
+ResourceBase::~ResourceBase() {}
+
+
+#pragma endregion
 
 
 #pragma region Resource
@@ -52,26 +94,90 @@ private:
 template <typename T>
 Resource<T>::Resource()
 {
+	resource = nullptr;
+}
 
+template <typename T>
+Resource<T>::Resource(T* resource)
+{
+	this->resource = static_cast<ResourceBase*>(resource);
+	this->resource->refCount++;
+}
+
+template <typename T>
+Resource<T>::Resource(const Resource<T>& resource)
+{
+	this->resource = resource.resource;
+	this->resource->refCount++;
 }
 
 template <typename T>
 Resource<T>::~Resource()
 {
-
+	if (this->resource != nullptr)
+		this->resource->refCount--;
 }
 
 template <typename T>
 T* Resource<T>::operator->()
 {
-	return static_cast<T*>(resource);
+	return static_cast<T*>(this->resource);
 }
 
 template <typename T>
 T& Resource<T>::operator*()
 {
-	return *static_cast<T*>(resource);
+	return *static_cast<T*>(this->resource);
 }
+
+template <typename T>
+Resource<T>& Resource<T>::operator=(T* resource)
+{
+	if (this->resource != nullptr)
+		this->resource->refCount--;
+
+	this->resource = static_cast<ResourceBase*>(resource);
+	this->resource->refCount++;
+
+	return (*this);
+}
+
+template <typename T>
+Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
+{
+	if (this->resource != nullptr)
+		this->resource->refCount--;
+
+	this->resource = resource.resource;
+	this->resource->refCount++;
+
+	return (*this);
+}
+
+template <typename T>
+bool Resource<T>::operator==(const T* resource) const
+{
+	return this->resource == resource;
+}
+
+template <typename T>
+bool Resource<T>::operator==(const Resource<T>& resource) const
+{
+	return this->resource == resource.resource;
+}
+
+template <typename T>
+bool Resource<T>::operator!=(const T* resource) const
+{
+	return !((*this) == resource);
+}
+
+template <typename T>
+bool Resource<T>::operator!=(const Resource<T>& resource) const
+{
+	return !((*this) == resource);
+}
+
 
 #pragma endregion
 
@@ -87,7 +193,11 @@ Resource<T> ResourceManager::Load(const std::string& path, std::function<void()>
 template <typename T>
 Resource<T> ResourceManager::Create(const std::string& name)
 {
-	return Resource<T>();
+	T* resource = new T;
+	size_t hash = stringHasher(name);
+
+	resources[hash] = resource;
+	return Resource<T>(resource);
 }
 
 #pragma endregion

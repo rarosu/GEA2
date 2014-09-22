@@ -3,6 +3,7 @@
 [Bb]in/*.ilk
 [Bb]in/*.pdb
 [Bb]in/*.idb
+[Bb]in/*.lib
 *.sdf
 *.suo
 *.opensdf
