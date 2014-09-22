@@ -17,12 +17,14 @@ solution "GEA2"
 		kind "ConsoleApp"
 		language "C++"
 		files { "GEA2/**.h", "GEA2/**.cpp" }
-		links { "opengl32", "AntTweakBar/lib/AntTweakBar", "glew/lib/glew32", "SDL/lib/x86/SDL2" }
-		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/" }
+		links { "opengl32", "AntTweakBar/lib/AntTweakBar", "glew/lib/glew32", "SDL/lib/x86/SDL2", "zlibwapi/lib/zlibwapi" }
+		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/"}
 	project "ResourceManager"
 		kind "StaticLib"
 		language "C++"
 		files { "ResourceManager/**.h", "ResourceManager/**.cpp" }
+		links { "zlibwapi/lib/zlibwapi" }
+		includedirs { "zlibwapi/include" }
 	project "ResourceManagerTests"
 		kind "ConsoleApp"
 		language "C++"
