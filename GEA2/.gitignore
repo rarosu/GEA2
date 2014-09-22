@@ -1,0 +1,10 @@
+[Bb]uild/
+[Bb]in/*.exe
+[Bb]in/*.ilk
+[Bb]in/*.pdb
+[Bb]in/*.idb
+[Bb]in/*.lib
+*.sdf
+*.suo
+*.opensdf
+*.user
