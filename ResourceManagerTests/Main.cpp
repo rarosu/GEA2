@@ -35,7 +35,7 @@ protected:
 	ResourceManager rm;
 };
 
-TEST(ResourceTest, ResourceCopying)
+TEST(ResourceTest, ResourceConstructionAssignment)
 {
 	MockResource original;
 	original.mockData[0] = 'K';
@@ -79,6 +79,23 @@ TEST(ResourceTest, ResourceCopying)
 	}
 	
 	ASSERT_EQ(original.refCount, 0);
+}
+
+TEST(ResourceTest, ResourceCopying)
+{
+	MockResource A;
+	MockResource B;
+
+	Resource<MockResource> a(&A);
+	Resource<MockResource> b(&B);
+
+	ASSERT_EQ(A.refCount, 1);
+	ASSERT_EQ(B.refCount, 1);
+
+	a = b;
+
+	ASSERT_EQ(A.refCount, 0);
+	ASSERT_EQ(B.refCount, 2);
 }
 
 TEST_F(ResourceManagerTest, CreateResource)

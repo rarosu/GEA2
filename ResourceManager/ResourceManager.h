@@ -133,6 +133,9 @@ T& Resource<T>::operator*()
 template <typename T>
 Resource<T>& Resource<T>::operator=(T* resource)
 {
+	if (this->resource == resource)
+		return (*this);
+
 	if (this->resource != nullptr)
 		this->resource->refCount--;
 
@@ -145,6 +148,9 @@ Resource<T>& Resource<T>::operator=(T* resource)
 template <typename T>
 Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
 {
+	if (this->resource == resource.resource)
+		return (*this);
+
 	if (this->resource != nullptr)
 		this->resource->refCount--;
 
