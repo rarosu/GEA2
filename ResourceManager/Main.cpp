@@ -9,4 +9,5 @@ int main()
 	size_t h = hf(s);
 
 	std::cout << h << std::endl;
+	std::cin.get();
 }

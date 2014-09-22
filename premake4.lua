@@ -15,5 +15,5 @@ solution "GEA2"
 		kind "ConsoleApp"
 		language "C++"
 		files { "ResourceManager/**.h", "ResourceManager/**.cpp" }
-		links { "zlib/lib/zlib" }
-		includedirs { "zlib/include/" }
+		--links { "zlib/lib/zdll" }
+		--includedirs { "zlib/include/" }
