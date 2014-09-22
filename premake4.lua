@@ -5,6 +5,7 @@ solution "GEA2"
 	location "Build"
 	targetdir "Bin"
 	debugdir "Bin"
+	buildoptions { "-D_VARIADIC_MAX=10" }
 	
 	configuration "Debug"
 		flags { "Symbols" }
@@ -19,8 +20,12 @@ solution "GEA2"
 		links { "opengl32", "AntTweakBar/lib/AntTweakBar", "glew/lib/glew32", "SDL/lib/x86/SDL2" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/" }
 	project "ResourceManager"
-		kind "ConsoleApp"
+		kind "StaticLib"
 		language "C++"
 		files { "ResourceManager/**.h", "ResourceManager/**.cpp" }
-		--links { "zlib/lib/zdll" }
-		--includedirs { "zlib/include/" }
+	project "ResourceManagerTests"
+		kind "ConsoleApp"
+		language "C++"
+		files { "ResourceManagerTests/**.h", "ResourceManagerTests/**.cpp" }
+		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager" }
+		includedirs { "gtest/include/", "ResourceManager/" }
