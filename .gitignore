@@ -1,5 +1,8 @@
 [Bb]uild/
-[Bb]in
+[Bb]in/*.exe
+[Bb]in/*.ilk
+[Bb]in/*.pdb
+[Bb]in/*.idb
 *.sdf
 *.suo
 *.opensdf

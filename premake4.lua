@@ -4,6 +4,13 @@ solution "GEA2"
 	
 	location "Build"
 	targetdir "Bin"
+	debugdir "Bin"
+	
+	configuration "Debug"
+		flags { "Symbols" }
+		targetsuffix "d"
+	configuration "Release"
+		flags { "Optimize" }
 	
 	project "GEA2"
 		kind "ConsoleApp"
