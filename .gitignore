@@ -1,4 +1,5 @@
-build/
+[Bb]uild/
+[Bb]in
 *.sdf
 *.suo
 *.opensdf

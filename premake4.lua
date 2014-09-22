@@ -1,7 +1,9 @@
 solution "GEA2"
 	configurations { "Debug", "Release" }
 	platforms { "x32" }
-	location "build"
+	
+	location "Build"
+	targetdir "Bin"
 	
 	project "GEA2"
 		kind "ConsoleApp"
