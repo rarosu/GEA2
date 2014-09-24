@@ -113,23 +113,35 @@ TEST_F(ResourceManagerTest, CreateResource)
 TEST_F(ResourceManagerTest, ArchiveTest)
 {
 	ASSERT_TRUE(rm.AddArchive<ZipArchive>("../Assets/Test.zip"));
+	ASSERT_TRUE(rm.AddArchive<ZipArchive>("../Assets/Test2.zip"));
 
-	ASSERT_EQ(rm.archives.size(), 1);
-	ASSERT_EQ(rm.files.size(), 4);
+	ASSERT_EQ(rm.archives.size(), 2);
+	ASSERT_EQ(rm.files.size(), 7);
 
-	ASSERT_NE(rm.files["Test1.txt"], nullptr);
-	ASSERT_NE(rm.files["Test2.txt"], nullptr);
-	ASSERT_NE(rm.files["LONGFUCKINGFILENAMEHERECOURTESYOFDANIEL.txt"], nullptr);
-	ASSERT_NE(rm.files["ThisIsADirectory/ThisIsInADirectory.txt"], nullptr);
-	
-	File* file = rm.files["Test1.txt"];
-	file->Open();
+	std::vector<std::pair<std::string, std::string>> contents;
+	contents.push_back(std::pair<std::string, std::string>("Test1.txt", "Test1 content"));
+	contents.push_back(std::pair<std::string, std::string>("Test2.txt", "Test2 content"));
+	contents.push_back(std::pair<std::string, std::string>("LONGFUCKINGFILENAMEHERECOURTESYOFDANIEL.txt", "FUCK YEAH!"));
+	contents.push_back(std::pair<std::string, std::string>("ThisIsADirectory/ThisIsInADirectory.txt", "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."));
+	contents.push_back(std::pair<std::string, std::string>("Kevin.txt", "Kevin kom på den här iden."));
+	contents.push_back(std::pair<std::string, std::string>("Thomas.txt", "Om det här inte funkar så är det Kevins fel."));
+	contents.push_back(std::pair<std::string, std::string>("Mapp/Daniel.txt", "Uuh, tack."));
 
-	CharBuffer buffer = file->GetStreamBuffer();
-	std::istream stream(&buffer);
+	for (size_t i = 0; i < contents.size(); ++i)
+	{
+		// Assert that the file exists.
+		ASSERT_NE(rm.files[contents[i].first], nullptr);
 
-	std::string line;
-	std::getline(stream, line);
+		// Assert that the contents are loaded properly.
+		File* file = rm.files[contents[i].first];
+		file->Open();
 
-	ASSERT_EQ(line, "Test1 content");
+		CharBuffer buffer = file->GetStreamBuffer();
+		std::istream stream(&buffer);
+
+		std::string line;
+		std::getline(stream, line);
+
+		ASSERT_EQ(line, contents[i].second);
+	}
 }
