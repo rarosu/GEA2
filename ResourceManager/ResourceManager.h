@@ -13,6 +13,9 @@
 #include <map>
 #include <string>
 #include <functional>
+#include <vector>
+#include <iostream>
+#include "Archive.h"
 
 // Forward declare
 class ResourceBase;
@@ -60,10 +63,12 @@ PRIVATE:
 };
 
 
-
 class ResourceManager
 {
 PUBLIC:
+	template <typename T>
+	bool AddArchive(const std::string& path);
+
 	template <typename T>
 	Resource<T> Load(const std::string& path, std::function<void()>& processor);
 
@@ -74,6 +79,12 @@ PRIVATE:
 	std::map<size_t, ResourceBase*> resources;
 	std::hash<std::string> stringHasher;
 	std::hash<size_t> intHasher;
+	
+	std::vector<Archive*> archives;
+	std::map<std::string, File*> files;
+
+	//std::vector<Archive> archives;
+	//std::map<std::string, Archive> archives;
 };
 
 
@@ -189,6 +200,33 @@ bool Resource<T>::operator!=(const Resource<T>& resource) const
 
 
 #pragma region ResourceManager
+
+template <typename T>
+bool ResourceManager::AddArchive(const std::string& path)
+{
+	T* archive = new T;
+	if (!archive->Open(path))
+	{
+		delete archive;
+		return false;
+	}
+
+	this->archives.push_back(archive);
+
+	std::vector<std::pair<std::string, File*>> archiveFiles = archive->GetFiles();
+	for (auto pair : archiveFiles)
+	{
+		if (this->files.find(pair.first) != this->files.end())
+		{
+			std::cerr << "Conflicting files: " << pair.first << std::endl;
+			continue;
+		}
+
+		this->files.insert(pair);
+	}
+
+	return true;
+}
 
 template <typename T>
 Resource<T> ResourceManager::Load(const std::string& path, std::function<void()>& processor)

@@ -2,6 +2,8 @@
 
 #include <gtest/gtest.h>
 #include <ResourceManager.h>
+#include <ZipArchive.h>
+#include <istream>
 
 class MockResource : public ResourceBase
 {
@@ -101,9 +103,33 @@ TEST(ResourceTest, ResourceCopying)
 TEST_F(ResourceManagerTest, CreateResource)
 {
 	std::string resourceName = "HerpResource";
-	Resource<MockResource> a = rm.Create<MockResource>("HerpResource");
+	Resource<MockResource> a = rm.Create<MockResource>(resourceName);
 	ASSERT_NE(a, nullptr);
 	ASSERT_EQ(a.resource->refCount, 1);
 	ASSERT_EQ(rm.resources.size(), 1);
 	ASSERT_EQ(rm.resources[rm.stringHasher(resourceName)], a.resource);
+}
+
+TEST_F(ResourceManagerTest, ArchiveTest)
+{
+	ASSERT_TRUE(rm.AddArchive<ZipArchive>("../Assets/Test.zip"));
+
+	ASSERT_EQ(rm.archives.size(), 1);
+	ASSERT_EQ(rm.files.size(), 4);
+
+	ASSERT_NE(rm.files["Test1.txt"], nullptr);
+	ASSERT_NE(rm.files["Test2.txt"], nullptr);
+	ASSERT_NE(rm.files["LONGFUCKINGFILENAMEHERECOURTESYOFDANIEL.txt"], nullptr);
+	ASSERT_NE(rm.files["ThisIsADirectory/ThisIsInADirectory.txt"], nullptr);
+	
+	File* file = rm.files["Test1.txt"];
+	file->Open();
+
+	CharBuffer buffer = file->GetStreamBuffer();
+	std::istream stream(&buffer);
+
+	std::string line;
+	std::getline(stream, line);
+
+	ASSERT_EQ(line, "Test1 content");
 }

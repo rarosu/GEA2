@@ -49,7 +49,7 @@ int test()
             printf( "could not read file info\n" );
             unzClose( zipfile );
             return -1;
-        }
+		}
 
         // Check if this entry is a directory or file.
         const size_t filename_length = strlen( filename );
