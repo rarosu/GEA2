@@ -134,7 +134,7 @@ TEST_F(ResourceManagerTest, ArchiveTest)
 
 		// Assert that the contents are loaded properly.
 		File* file = rm.files[contents[i].first];
-		file->Open();
+		ASSERT_TRUE(file->Open());
 
 		CharBuffer buffer = file->GetStreamBuffer();
 		std::istream stream(&buffer);
@@ -143,5 +143,19 @@ TEST_F(ResourceManagerTest, ArchiveTest)
 		std::getline(stream, line);
 
 		ASSERT_EQ(line, contents[i].second);
+
+		file->Close();
+	}
+
+	// Test reading unformatted binary data.
+	{
+		File* f = rm.files[contents[0].first];
+		long int filesize = f->GetFileSize();
+
+		ASSERT_TRUE(f->Open());
+		ASSERT_EQ(filesize, contents[0].second.size());
+	
+		//char* data = char[filesize];
+		//rm.files[contents[0].first]->Read(data, 
 	}
 }

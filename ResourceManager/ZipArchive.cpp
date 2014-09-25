@@ -88,12 +88,10 @@ ZipArchiveFile::ZipArchiveFile(unzFile archive, const unz_file_info& info, const
 
 ZipArchiveFile::~ZipArchiveFile()
 {
-	delete[] data;
 }
 
 bool ZipArchiveFile::Open()
 {
-	//unzLocateFile(archive  
  	if (unzGoToFilePos(archive, &position) != UNZ_OK)
 	{
 		return false;
@@ -104,14 +102,43 @@ bool ZipArchiveFile::Open()
 		return false;
 	}
 
-	this->data = new char[this->info.uncompressed_size];
+	return true;
+}
 
-	unzReadCurrentFile(this->archive, this->data, this->info.uncompressed_size );
+bool ZipArchiveFile::Close()
+{
+	if (unzCloseCurrentFile(archive) != UNZ_OK)
+	{
+		return false;
+	}
 
 	return true;
 }
 
+size_t ZipArchiveFile::Read(void* ptr, size_t byteCount)
+{
+	return unzReadCurrentFile(archive, ptr, byteCount);
+}
+
+bool ZipArchiveFile::Seek(long int offset, File::Origin origin)
+{
+	//unzGetOffset(archive);
+	//unz
+
+	return true;
+}
+
+long int ZipArchiveFile::Tell()
+{
+	return 0;
+}
+
+long int ZipArchiveFile::GetFileSize()
+{
+	return info.uncompressed_size;
+}
+
 CharBuffer ZipArchiveFile::GetStreamBuffer()
 {
-	return CharBuffer(this->data, this->data + this->info.uncompressed_size);
+	return CharBuffer(0, 0);
 }

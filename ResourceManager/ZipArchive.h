@@ -27,9 +27,13 @@ public:
 	ZipArchiveFile(unzFile archive, const unz_file_info& info, const unz_file_pos& position);
 	~ZipArchiveFile();
 	bool Open();
+	bool Close();
+	size_t Read(void* ptr, size_t byteCount);
+	bool Seek(long int offset, File::Origin origin);
+	long int Tell();
+	long int GetFileSize();
 	CharBuffer GetStreamBuffer();
 private:
-	char* data;
 	unzFile archive;
 	unz_file_info info;
 	unz_file_pos position;
