@@ -32,7 +32,6 @@ public:
 	bool Seek(long int offset, File::Origin origin);
 	long int Tell();
 	long int GetFileSize();
-	CharBuffer GetStreamBuffer();
 private:
 	unzFile archive;
 	unz_file_info info;

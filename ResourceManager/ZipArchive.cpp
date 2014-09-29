@@ -122,10 +122,7 @@ size_t ZipArchiveFile::Read(void* ptr, size_t byteCount)
 
 bool ZipArchiveFile::Seek(long int offset, File::Origin origin)
 {
-	//unzGetOffset(archive);
-	//unz
-
-	return true;
+	return false;
 }
 
 long int ZipArchiveFile::Tell()
@@ -136,9 +133,4 @@ long int ZipArchiveFile::Tell()
 long int ZipArchiveFile::GetFileSize()
 {
 	return info.uncompressed_size;
-}
-
-CharBuffer ZipArchiveFile::GetStreamBuffer()
-{
-	return CharBuffer(0, 0);
 }

@@ -56,19 +56,6 @@ public:
 		Return the size of the file, in bytes.
 	*/
 	virtual long int GetFileSize() = 0;
-
-	/**
-		Get a streambuf object for reading the entire file as a text file.
-
-		Usage:
-
-			CharBuffer buffer = file.GetStreamBuffer();
-			std::istream stream(&buffer);
-			// Use stream to extract formatted text
-	*/
-	virtual CharBuffer GetStreamBuffer() = 0;
-
-
 };
 
 class Archive
