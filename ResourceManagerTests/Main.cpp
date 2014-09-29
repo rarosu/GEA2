@@ -68,7 +68,7 @@ TEST_F(ResourceManagerTest, ResourceConstructionAssignment)
 		ASSERT_EQ(a, nullptr);
 
 		Resource<MockResource> b = rm.Create();
-		ASSERT_NE(rm.container.resources[0].resource, nullptr);
+		ASSERT_NE(rm.container.resources[0]->resource, nullptr);
 
 		ASSERT_NE(b, a);
 		ASSERT_NE(b, nullptr);
@@ -95,7 +95,7 @@ TEST_F(ResourceManagerTest, ResourceConstructionAssignment)
 		ASSERT_EQ(a.internal->refCount, 3);
 	}
 	
-	ASSERT_EQ(rm.container.resources[0].refCount, 0);
+	ASSERT_EQ(rm.container.resources[0]->refCount, 0);
 }
 
 /*

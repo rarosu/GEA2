@@ -24,29 +24,50 @@ template <typename T>
 class ResourceContainer
 {
 PUBLIC:
-	ResourceContainer();
+	~ResourceContainer();
 
 	InternalResource<T>* AddResource(size_t hash, T* resource);
 PRIVATE:
-	static const size_t HASHMAP_SIZE = 10000;
-	InternalResource<T> resources[HASHMAP_SIZE];
-	//std::map<size_t, InternalResource<T>> resources;
+	//static const size_t HASHMAP_SIZE = 10000;
+	//InternalResource<T> resources[HASHMAP_SIZE];
+	std::map<size_t, InternalResource<T>*> resources;
 };
 
 
 
+
+
+
+
 template <typename T>
-ResourceContainer<T>::ResourceContainer()
+ResourceContainer<T>::~ResourceContainer()
 {
-	memset(resources, 0, sizeof(resources));
+	for (auto it : resources)
+	{
+		delete it.second;
+	}
 }
 
 template <typename T>
 InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
 {
-	InternalResource<T> internal;
-	internal.resource = resource;
-	internal.refCount = 0;
+	InternalResource<T>* internal = new InternalResource<T>;
+	internal->resource = resource;
+	internal->refCount = 0;
+
+#ifdef _DEBUG
+	auto it = resources.find(hash);
+	if (it != resources.end())
+	{
+		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << it->second->resource << " with " << resource << std::endl;
+	}
+#endif
+
+	resources[hash] = internal;
+	return internal;
+
+	/*
+	// DEPRECATED - Hash map impl. //
 
 	size_t index = hash % HASHMAP_SIZE;
 #ifdef _DEBUG
@@ -56,4 +77,5 @@ InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
 
 	resources[hash % HASHMAP_SIZE] = internal;
 	return &resources[hash];
+	*/
 }
