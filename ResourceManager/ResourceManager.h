@@ -40,27 +40,7 @@ PRIVATE:
 
 
 
-template <typename T>
-class Resource
-{
-PUBLIC:
-	Resource();
-	Resource(T* resource);
-	Resource(const Resource<T>& resource);
-	~Resource();
 
-	T* operator->();
-	T& operator*();
-	Resource<T>& operator=(T* resource);
-	Resource<T>& operator=(const Resource<T>& resource);
-
-	bool operator==(const T* resource) const;
-	bool operator==(const Resource<T>& resource) const;
-	bool operator!=(const T* resource) const;
-	bool operator!=(const Resource<T>& resource) const;
-PRIVATE:
-	ResourceBase* resource;
-};
 
 
 class ResourceManager
@@ -95,105 +75,6 @@ ResourceBase::ResourceBase()
 	: refCount(0) {}
 
 ResourceBase::~ResourceBase() {}
-
-
-#pragma endregion
-
-
-#pragma region Resource
-
-template <typename T>
-Resource<T>::Resource()
-{
-	resource = nullptr;
-}
-
-template <typename T>
-Resource<T>::Resource(T* resource)
-{
-	this->resource = static_cast<ResourceBase*>(resource);
-	this->resource->refCount++;
-}
-
-template <typename T>
-Resource<T>::Resource(const Resource<T>& resource)
-{
-	this->resource = resource.resource;
-	this->resource->refCount++;
-}
-
-template <typename T>
-Resource<T>::~Resource()
-{
-	if (this->resource != nullptr)
-		this->resource->refCount--;
-}
-
-template <typename T>
-T* Resource<T>::operator->()
-{
-	return static_cast<T*>(this->resource);
-}
-
-template <typename T>
-T& Resource<T>::operator*()
-{
-	return *static_cast<T*>(this->resource);
-}
-
-template <typename T>
-Resource<T>& Resource<T>::operator=(T* resource)
-{
-	if (this->resource == resource)
-		return (*this);
-
-	if (this->resource != nullptr)
-		this->resource->refCount--;
-
-	this->resource = static_cast<ResourceBase*>(resource);
-	this->resource->refCount++;
-
-	return (*this);
-}
-
-template <typename T>
-Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
-{
-	if (this->resource == resource.resource)
-		return (*this);
-
-	if (this->resource != nullptr)
-		this->resource->refCount--;
-
-	this->resource = resource.resource;
-	this->resource->refCount++;
-
-	return (*this);
-}
-
-template <typename T>
-bool Resource<T>::operator==(const T* resource) const
-{
-	return this->resource == resource;
-}
-
-template <typename T>
-bool Resource<T>::operator==(const Resource<T>& resource) const
-{
-	return this->resource == resource.resource;
-}
-
-template <typename T>
-bool Resource<T>::operator!=(const T* resource) const
-{
-	return !((*this) == resource);
-}
-
-template <typename T>
-bool Resource<T>::operator!=(const Resource<T>& resource) const
-{
-	return !((*this) == resource);
-}
 
 
 #pragma endregion
