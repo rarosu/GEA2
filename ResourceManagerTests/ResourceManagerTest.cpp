@@ -22,10 +22,10 @@ public:
 	{
 		MockResource* resource = new MockResource;
 		resource->mockData[0] = 'K';
-		std::map<size_t, InternalResource<MockResource>>::iterator internal = container.AddResource(counter, resource);
+		InternalResource<MockResource>::Iterator internal = container.AddResource(counter, resource);
 		counter++;
 
-		return Resource<MockResource>(resource, internal, &container, std::bind(&MockResourceManager::Destructor, this, std::placeholders::_1));
+		return Resource<MockResource>(internal, &container, std::bind(&MockResourceManager::Destructor, this, std::placeholders::_1));
 	}
 
 	void Destructor(const InternalResource<MockResource>::Iterator& iterator)
@@ -33,6 +33,7 @@ public:
 		container.RemoveResource(iterator);
 	}
 
+	
 	ResourceContainer<MockResource> container;
 	int counter;
 };

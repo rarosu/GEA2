@@ -19,7 +19,7 @@ class Resource
 PUBLIC:
 	typedef std::function<void(typename const InternalResource<T>::Iterator&)> DestructorFunction;
 
-	Resource(T* resource, typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor);
+	Resource(typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor);
 	Resource(const Resource<T>& resource);
 	~Resource();
 
@@ -42,9 +42,9 @@ PRIVATE:
 
 
 template <typename T>
-Resource<T>::Resource(T* resource, typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor)
+Resource<T>::Resource(typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor)
 {
-	this->resource = resource;
+	this->resource = internal->second.resource;
 	this->internal = internal;
 	this->container = container;
 	this->destructor = destructor;
@@ -58,6 +58,7 @@ Resource<T>::Resource(const Resource<T>& resource)
 	this->resource = resource.resource;
 	this->internal = resource.internal;
 	this->container = resource.container;
+	this->destructor = resource.destructor;
 	
 	this->internal->second.refCount++;
 }
@@ -106,6 +107,7 @@ Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
 	this->resource = resource.resource;
 	this->internal = resource.internal;
 	this->container = resource.container;
+	this->destructor = resource.destructor;
 	this->internal->second.refCount++;
 
 	return (*this);
