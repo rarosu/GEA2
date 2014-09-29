@@ -28,9 +28,9 @@ public:
 		return Resource<MockResource>(resource, internal, &container, std::bind(&MockResourceManager::Destructor, this, std::placeholders::_1));
 	}
 
-	void Destructor(const std::map<size_t, InternalResource<MockResource>>::iterator& iterator)
+	void Destructor(const InternalResource<MockResource>::Iterator& iterator)
 	{
-
+		container.RemoveResource(iterator);
 	}
 
 	ResourceContainer<MockResource> container;
@@ -54,7 +54,7 @@ TEST_F(ResourceManagerTest, ResourceConstructionAssignment)
 		*/
 
 		Resource<MockResource> b = rm.Create();
-		ASSERT_NE(rm.container.resources[0].resource, nullptr);
+		ASSERT_NE(rm.container.resources.find(0), rm.container.resources.end());
 
 		ASSERT_NE(b, nullptr);
 		ASSERT_EQ(b.internal->second.refCount, 1);
@@ -78,7 +78,13 @@ TEST_F(ResourceManagerTest, ResourceConstructionAssignment)
 		}
 
 		ASSERT_EQ(a.internal->second.refCount, 3);
+
+		Resource<MockResource> d = rm.Create();
+		ASSERT_NE(rm.container.resources.find(1), rm.container.resources.end()); 
+		d = a;
+		ASSERT_EQ(rm.container.resources.find(1), rm.container.resources.end());
 	}
 	
-	ASSERT_EQ(rm.container.resources[0].refCount, 0);
+	//ASSERT_EQ(rm.container.resources[0].refCount, 0);
+	ASSERT_EQ(rm.container.resources.size(), 0);
 }

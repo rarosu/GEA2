@@ -17,8 +17,9 @@ template <typename T>
 class Resource
 {
 PUBLIC:
-	//Resource();
-	Resource(T* resource, typename const std::map<size_t, InternalResource<T>>::iterator& internal, ResourceContainer<T>* container, const std::function<void(typename const std::map<size_t, InternalResource<T>>::iterator&)>& destructor);
+	typedef std::function<void(typename const InternalResource<T>::Iterator&)> DestructorFunction;
+
+	Resource(T* resource, typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor);
 	Resource(const Resource<T>& resource);
 	~Resource();
 
@@ -32,28 +33,21 @@ PUBLIC:
 	bool operator!=(const Resource<T>& resource) const;
 PRIVATE:
 	T* resource;
-	typename std::map<size_t, InternalResource<T>>::iterator internal;
+	typename InternalResource<T>::Iterator internal;
 	ResourceContainer<T>* container;
+	DestructorFunction destructor;
 };
 
 
 
 
-/*
 template <typename T>
-Resource<T>::Resource()
-{
-	resource = nullptr;
-	container = nullptr;
-}
-*/
-
-template <typename T>
-Resource<T>::Resource(T* resource, typename const std::map<size_t, InternalResource<T>>::iterator& internal, ResourceContainer<T>* container, const std::function<void(typename const std::map<size_t, InternalResource<T>>::iterator&)>& destructor)
+Resource<T>::Resource(T* resource, typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor)
 {
 	this->resource = resource;
 	this->internal = internal;
 	this->container = container;
+	this->destructor = destructor;
 	
 	this->internal->second.refCount++;
 }
@@ -72,7 +66,13 @@ template <typename T>
 Resource<T>::~Resource()
 {
 	if (this->internal != container->resources.end())
+	{
 		this->internal->second.refCount--;
+		if (this->internal->second.refCount == 0)
+		{
+			destructor(this->internal);
+		}
+	}
 }
 
 template <typename T>
@@ -87,22 +87,6 @@ T& Resource<T>::operator*()
 	return *this->resource;
 }
 
-/*
-template <typename T>
-Resource<T>& Resource<T>::operator=(T* resource)
-{
-	if (this->resource == resource)
-		return (*this);
-
-	if (this->resource != nullptr)
-		this->resource->refCount--;
-
-	this->resource = static_cast<ResourceBase*>(resource);
-	this->resource->refCount++;
-
-	return (*this);
-}
-*/
 
 template <typename T>
 Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
@@ -111,7 +95,13 @@ Resource<T>& Resource<T>::operator=(const Resource<T>& resource)
 		return (*this);
 
 	if (this->internal != container->resources.end())
+	{
 		this->internal->second.refCount--;
+		if (this->internal->second.refCount == 0)
+		{
+			destructor(this->internal);
+		}
+	}
 
 	this->resource = resource.resource;
 	this->internal = resource.internal;

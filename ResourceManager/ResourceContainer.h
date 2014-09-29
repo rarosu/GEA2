@@ -16,6 +16,8 @@
 template <typename T>
 struct InternalResource
 {
+	typedef typename std::map<size_t, InternalResource<T>>::iterator Iterator;
+
 	T* resource;
 	int refCount;
 };
@@ -24,11 +26,9 @@ template <typename T>
 class ResourceContainer
 {
 PUBLIC:
-	typename std::map<size_t, InternalResource<T>>::iterator AddResource(size_t hash, T* resource);
+	typename InternalResource<T>::Iterator AddResource(size_t hash, T* resource);
+	void RemoveResource(const typename InternalResource<T>::Iterator& iterator);
 PRIVATE:
-	//static const size_t HASHMAP_SIZE = 10000;
-	//InternalResource<T> resources[HASHMAP_SIZE];
-	//std::map<size_t, InternalResource<T>*> resources;
 	std::map<size_t, InternalResource<T>> resources;
 };
 
@@ -36,16 +36,14 @@ PRIVATE:
 
 
 
-
-
 template <typename T>
-typename std::map<size_t, InternalResource<T>>::iterator ResourceContainer<T>::AddResource(size_t hash, T* resource)
+typename InternalResource<T>::Iterator ResourceContainer<T>::AddResource(size_t hash, T* resource)
 {
 	InternalResource<T> internal;
 	internal.resource = resource;
 	internal.refCount = 0;
 
-	std::pair<std::map<size_t, InternalResource<T>>::iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>>(hash, internal));
+	std::pair<InternalResource<T>::Iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>>(hash, internal));
 
 #ifdef _DEBUG
 	if (!result.second)
@@ -56,17 +54,11 @@ typename std::map<size_t, InternalResource<T>>::iterator ResourceContainer<T>::A
 #endif
 
 	return result.first;
+}
 
-	/*
-	// DEPRECATED - Hash map impl. //
 
-	size_t index = hash % HASHMAP_SIZE;
-#ifdef _DEBUG
-	if (resources[index].resource != nullptr)
-		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << resources[index].resource << " with " << resource << std::endl;
-#endif
-
-	resources[hash % HASHMAP_SIZE] = internal;
-	return &resources[hash];
-	*/
+template <typename T>
+void ResourceContainer<T>::RemoveResource(const typename InternalResource<T>::Iterator& iterator)
+{
+	resources.erase(iterator);
 }
