@@ -24,13 +24,12 @@ template <typename T>
 class ResourceContainer
 {
 PUBLIC:
-	~ResourceContainer();
-
-	InternalResource<T>* AddResource(size_t hash, T* resource);
+	typename std::map<size_t, InternalResource<T>>::iterator AddResource(size_t hash, T* resource);
 PRIVATE:
 	//static const size_t HASHMAP_SIZE = 10000;
 	//InternalResource<T> resources[HASHMAP_SIZE];
-	std::map<size_t, InternalResource<T>*> resources;
+	//std::map<size_t, InternalResource<T>*> resources;
+	std::map<size_t, InternalResource<T>> resources;
 };
 
 
@@ -40,31 +39,23 @@ PRIVATE:
 
 
 template <typename T>
-ResourceContainer<T>::~ResourceContainer()
+typename std::map<size_t, InternalResource<T>>::iterator ResourceContainer<T>::AddResource(size_t hash, T* resource)
 {
-	for (auto it : resources)
-	{
-		delete it.second;
-	}
-}
+	InternalResource<T> internal;
+	internal.resource = resource;
+	internal.refCount = 0;
 
-template <typename T>
-InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
-{
-	InternalResource<T>* internal = new InternalResource<T>;
-	internal->resource = resource;
-	internal->refCount = 0;
+	std::pair<std::map<size_t, InternalResource<T>>::iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>>(hash, internal));
 
 #ifdef _DEBUG
-	auto it = resources.find(hash);
-	if (it != resources.end())
+	if (!result.second)
 	{
-		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << it->second->resource << " with " << resource << std::endl;
+		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << result.first->second.resource << " with " << resource << std::endl;
+		return resources.end();
 	}
 #endif
 
-	resources[hash] = internal;
-	return internal;
+	return result.first;
 
 	/*
 	// DEPRECATED - Hash map impl. //
