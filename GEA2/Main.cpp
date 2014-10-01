@@ -4,6 +4,8 @@
 #include <glew.h>
 #include <AntTweakBar.h>
 
+#include "Renderer/Renderer.h"
+
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
@@ -55,12 +57,16 @@ int main(int argc, char* argv[])
 
 	TwAddVarRW(antbar, "Test", TW_TYPE_INT32, &test, " label='Number of cubes' min=1 max=100 keyIncr=c keyDecr=C help='Defines the number of cubes in the scene.' ");
 
+	//Initialize renderer
+	Renderer renderer;
+
 	bool running = true;
 	while (running)
 	{
 		running = HandleEvents();
 
-		glClear(GL_COLOR_BUFFER_BIT);
+		//Render all the things!
+		renderer.Draw();
 
 		TwDraw();
 		SDL_GL_SwapWindow(window);
