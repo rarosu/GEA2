@@ -1,13 +1,14 @@
+#include "Main.h"
 #include <iostream>
-#include <SDL.h>
 #include <glm.hpp>
 #include <glew.h>
 #include <AntTweakBar.h>
+#include "ThreadPool.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
-SDL_Window* window;
+SDL_Window* g_window;
 SDL_GLContext context;
 TwBar* antbar;
 int test;
@@ -19,27 +20,33 @@ bool HandleEvents();
 int main(int argc, char* argv[])
 {
 	SDL_Init(SDL_INIT_TIMER);
-	window = SDL_CreateWindow("GEA2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
-
-	int flags = 0;
-#if defined (_DEBUG)
-	flags = SDL_GL_CONTEXT_DEBUG_FLAG;
-#endif
 
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 32);
-	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
-	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags);
 
-	context = SDL_GL_CreateContext(window);
+	g_window = SDL_CreateWindow("GEA2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_OPENGL | SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE);
+
+	int glContextFlags = 0; 
+ #if defined (_DEBUG) 
+ 	glContextFlags = SDL_GL_CONTEXT_DEBUG_FLAG; 
+ #endif 
+ 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); 
+ 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16); 
+ 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, glContextFlags); 
+ 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1); 
+
+	context = SDL_GL_CreateContext(g_window);
+
+	// Initiate GLEW. 
+ 	glewExperimental = GL_TRUE; 
+ 	GLenum err = glewInit(); 
+ 	if (err != GLEW_OK) { 
+ 		printf("Error init glew.\n"); 
+ 		return 1; 
+ 	} 
 
 	SDL_GL_SetSwapInterval(0);
-
-	glewInit();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 	glClearColor(1, 0, 0, 0);
@@ -63,12 +70,12 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		TwDraw();
-		SDL_GL_SwapWindow(window);
+		SDL_GL_SwapWindow(g_window);
 	}
 
 	TwTerminate();
 	SDL_GL_DeleteContext(context);
-	SDL_DestroyWindow(window);
+	SDL_DestroyWindow(g_window);
 	return 0;
 }
 
