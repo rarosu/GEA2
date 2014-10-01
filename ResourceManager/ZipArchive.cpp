@@ -94,11 +94,13 @@ bool ZipArchiveFile::Open()
 {
  	if (unzGoToFilePos(archive, &position) != UNZ_OK)
 	{
+		std::cerr << "ZipArchive: Failed to go to file position" << std::endl;
 		return false;
 	}
 
 	if (unzOpenCurrentFile(archive) != UNZ_OK)
 	{
+		std::cerr << "ZipArchive: Failed to open current file" << std::endl;
 		return false;
 	}
 
@@ -109,6 +111,7 @@ bool ZipArchiveFile::Close()
 {
 	if (unzCloseCurrentFile(archive) != UNZ_OK)
 	{
+		std::cerr << "ZipArchive: Failed to close current file" << std::endl;
 		return false;
 	}
 

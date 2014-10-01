@@ -19,7 +19,7 @@ solution "GEA2"
 		kind "ConsoleApp"
 		language "C++"
 		files { "GEA2/**.h", "GEA2/**.cpp" }
-		links { "opengl32", "AntTweakBar/lib/AntTweakBar", "glew/lib/glew32", "SDL/lib/x86/SDL2", "zlibwapi/lib/zlibwapi" }
+		links { "opengl32", "AntTweakBar/lib/AntTweakBar", "glew/lib/glew32", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image", "zlibwapi/lib/zlibwapi" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
 	project "ResourceManager"
 		kind "StaticLib"
@@ -31,5 +31,5 @@ solution "GEA2"
 		kind "ConsoleApp"
 		language "C++"
 		files { "ResourceManagerTests/**.h", "ResourceManagerTests/**.cpp" }
-		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager", "zlibwapi/lib/zlibwapi" }
+		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }

@@ -3,6 +3,8 @@
 #include <map>
 #include <iostream>
 
+template <typename> class Resource;
+
 #ifdef ALL_PUBLIC
 	#define PUBLIC public
 	#define PRIVATE public
@@ -25,9 +27,13 @@ struct InternalResource
 template <typename T>
 class ResourceContainer
 {
+	template <typename> friend class Resource;
 PUBLIC:
 	typename InternalResource<T>::Iterator AddResource(size_t hash, T* resource);
+	typename InternalResource<T>::Iterator GetResource(size_t hash);
 	void RemoveResource(const typename InternalResource<T>::Iterator& iterator);
+
+	typename InternalResource<T>::Iterator GetEnd();
 PRIVATE:
 	std::map<size_t, InternalResource<T>> resources;
 };
@@ -56,9 +62,21 @@ typename InternalResource<T>::Iterator ResourceContainer<T>::AddResource(size_t 
 	return result.first;
 }
 
+template <typename T>
+typename InternalResource<T>::Iterator ResourceContainer<T>::GetResource(size_t hash)
+{
+	return resources.find(hash);
+}
+
 
 template <typename T>
 void ResourceContainer<T>::RemoveResource(const typename InternalResource<T>::Iterator& iterator)
 {
 	resources.erase(iterator);
+}
+
+template <typename T>
+typename InternalResource<T>::Iterator ResourceContainer<T>::GetEnd()
+{
+	return resources.end();
 }

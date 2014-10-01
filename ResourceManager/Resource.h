@@ -19,6 +19,8 @@ class Resource
 PUBLIC:
 	typedef std::function<void(typename const InternalResource<T>::Iterator&)> DestructorFunction;
 
+	static Resource<T> GetEmptyResource(ResourceContainer<T>* container);
+
 	Resource(typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor);
 	Resource(const Resource<T>& resource);
 	~Resource();
@@ -31,15 +33,32 @@ PUBLIC:
 	bool operator==(const Resource<T>& resource) const;
 	bool operator!=(const T* resource) const;
 	bool operator!=(const Resource<T>& resource) const;
+
+	bool IsEmpty() const;
 PRIVATE:
 	T* resource;
 	typename InternalResource<T>::Iterator internal;
 	ResourceContainer<T>* container;
 	DestructorFunction destructor;
+
+	Resource(ResourceContainer<T>* container);
 };
 
 
+template <typename T>
+Resource<T> Resource<T>::GetEmptyResource(ResourceContainer<T>* container)
+{
+	return Resource<T>(container);
+}
 
+template <typename T>
+Resource<T>::Resource(ResourceContainer<T>* container)
+{
+	this->resource = nullptr;
+	this->internal = container->resources.end();
+	this->container = container;
+	this->destructor = nullptr;
+}
 
 template <typename T>
 Resource<T>::Resource(typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor)
@@ -135,4 +154,10 @@ template <typename T>
 bool Resource<T>::operator!=(const Resource<T>& resource) const
 {
 	return !((*this) == resource);
+}
+
+template <typename T>
+bool Resource<T>::IsEmpty() const
+{
+	return internal == container->GetEnd();
 }
