@@ -79,8 +79,6 @@ Resource<SDL_Surface> TextureResourceManager::Load(const std::string& vpath)
 		SDL_FreeSurface(surface);
 		return Resource<SDL_Surface>::GetEmptyResource(&textures);
 	}
-
-
 	
 	internal = textures.AddResource(hash, surface);
 	return Resource<SDL_Surface>(internal, &textures, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
@@ -104,6 +102,9 @@ TEST_F(TextureResourceManagerTest, TextureLoad)
 
 		ASSERT_EQ(r1->w, 1406);
 		ASSERT_EQ(r1->h, 681);
+
+		Resource<SDL_Surface> r3 = rm.Load("TestTexture.png");
+		ASSERT_EQ(r1, r3);
 	}
 
 	ASSERT_EQ(rm.textures.resources.size(), 0);
