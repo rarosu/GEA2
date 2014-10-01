@@ -2,7 +2,7 @@
 
 Renderer::Renderer()
 {
-
+	shaderProgram.CreateProgram("../Shaders/Cube");
 }
 
 Renderer::~Renderer()

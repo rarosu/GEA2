@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glew.h>
+#include "ShaderProgram.h"
 
 class Renderer
 {
@@ -11,4 +12,6 @@ public:
 	void Draw();
 
 private:
+
+	ShaderProgram shaderProgram;
 };
