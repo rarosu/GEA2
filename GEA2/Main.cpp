@@ -36,7 +36,7 @@ int main(int argc, char* argv[])
 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags);
-
+	glewExperimental = GL_TRUE; 
 	context = SDL_GL_CreateContext(window);
 
 	SDL_GL_SetSwapInterval(0);
@@ -63,6 +63,8 @@ int main(int argc, char* argv[])
 	bool running = true;
 	while (running)
 	{
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 		running = HandleEvents();
 
 		//Render all the things!

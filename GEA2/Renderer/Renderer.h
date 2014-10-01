@@ -14,4 +14,7 @@ public:
 private:
 
 	ShaderProgram shaderProgram;
+
+	//test
+	GLuint vao;
 };
