@@ -4,6 +4,7 @@
 #include <gtest/gtest.h>
 #include <Filesystem.h>
 #include <ZipArchive.h>
+#include <FilesystemArchive.h>
 
 class FilesystemTest : public ::testing::Test
 {
@@ -58,4 +59,9 @@ TEST_F(FilesystemTest, ArchiveTest)
 
 		file->Close();
 	}
+}
+
+TEST_F(FilesystemTest, DirectoryTest)
+{
+	fs.AddArchive<FilesystemArchive>("..\\..\\assets\\TestDirectory");
 }

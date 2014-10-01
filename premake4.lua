@@ -25,11 +25,11 @@ solution "GEA2"
 		kind "StaticLib"
 		language "C++"
 		files { "ResourceManager/**.h", "ResourceManager/**.cpp" }
-		links { "zlibwapi/lib/zlibwapi" }
+		links { "zlibwapi/lib/zlibwapi", "Shlwapi" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
 	project "ResourceManagerTests"
 		kind "ConsoleApp"
 		language "C++"
 		files { "ResourceManagerTests/**.h", "ResourceManagerTests/**.cpp" }
-		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image" }
+		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image", "Shlwapi" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
