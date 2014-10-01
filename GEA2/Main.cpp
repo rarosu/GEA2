@@ -1,4 +1,3 @@
-#include "Main.h"
 #include <iostream>
 #include <glm.hpp>
 #include <glew.h>
@@ -29,22 +28,22 @@ int main(int argc, char* argv[])
 
 	int glContextFlags = 0; 
  #if defined (_DEBUG) 
- 	glContextFlags = SDL_GL_CONTEXT_DEBUG_FLAG; 
+	glContextFlags = SDL_GL_CONTEXT_DEBUG_FLAG; 
  #endif 
- 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); 
- 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16); 
- 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, glContextFlags); 
- 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1); 
+	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1); 
+	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16); 
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, glContextFlags); 
+	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1); 
 
 	context = SDL_GL_CreateContext(g_window);
 
 	// Initiate GLEW. 
- 	glewExperimental = GL_TRUE; 
- 	GLenum err = glewInit(); 
- 	if (err != GLEW_OK) { 
- 		printf("Error init glew.\n"); 
- 		return 1; 
- 	} 
+	glewExperimental = GL_TRUE; 
+	GLenum err = glewInit(); 
+	if (err != GLEW_OK) { 
+		printf("Error init glew.\n"); 
+		return 1; 
+	} 
 
 	SDL_GL_SetSwapInterval(0);
 

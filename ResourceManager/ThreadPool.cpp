@@ -12,8 +12,7 @@ void Worker::operator()()
 {
 	SDL_GL_MakeCurrent(g_window, context);
 
-	TaskFunc task;
-	void* data;
+	std::function<void()> task;
 	while(true)
 	{
 		{
@@ -27,14 +26,11 @@ void Worker::operator()()
 			if(pool.stop)
 				return;
 
-			task = pool.tasks.back();
-			pool.tasks.pop_back();
-
-			data = pool.data.back();
-			pool.data.pop_back();
+			task = std::move(pool.tasks.back());
+			pool.tasks.pop();
 		}
 		
-		task(data, id);
+		task();
 	}
 
 	SDL_GL_MakeCurrent(g_window, nullptr);
@@ -59,7 +55,10 @@ ThreadPool::ThreadPool(size_t size)
 
 ThreadPool::~ThreadPool()
 {
-	stop = true;
+	{
+		std::unique_lock<std::mutex> lock(mutex);
+		stop = true;
+	}
 
 	cond.notify_all();
 
@@ -67,16 +66,4 @@ ThreadPool::~ThreadPool()
 	{
 		threads[i].join();
 	}
-}
-
-void ThreadPool::AddTask(TaskFunc task, void* taskData)
-{
-	mutex.lock();
-
-	tasks.push_back(task);
-	data.push_back(taskData);
-
-	mutex.unlock();
-
-	cond.notify_one();
 }
