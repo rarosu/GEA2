@@ -1,6 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer()
+Renderer::Renderer(Camera* camera)
+	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER)
 {
 	shaderProgram.CreateProgram("../Assets/Shaders/Cube");
 
@@ -15,6 +16,9 @@ Renderer::Renderer()
 
 	testMesh.CreateVertexBuffer(points, 3);
 	//////////////////////////////////////////////////////////////////////////
+
+	//Set up camera buffer
+	cameraBuffer.BufferData(1, sizeof(glm::mat4), &camera->GetViewProjMatrix(), GL_DYNAMIC_DRAW);
 }
 
 Renderer::~Renderer()
@@ -25,6 +29,9 @@ Renderer::~Renderer()
 void Renderer::Draw()
 {
 	//Test
+	cameraBuffer.BufferSubData(0, sizeof(glm::mat4), &camera->GetViewProjMatrix());
+	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraBuffer.GetBufferId());
+
 	shaderProgram.Use();
 	testMesh.Draw();
 	//////////////////

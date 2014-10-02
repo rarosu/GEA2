@@ -5,10 +5,12 @@
 #include <AntTweakBar.h>
 
 #include "Renderer/Renderer.h"
+#include "Renderer/Camera.h"
 
 const int WINDOW_WIDTH = 800;
 const int WINDOW_HEIGHT = 600;
 
+Camera camera;
 SDL_Window* window;
 SDL_GLContext context;
 TwBar* antbar;
@@ -58,14 +60,47 @@ int main(int argc, char* argv[])
 	TwAddVarRW(antbar, "Test", TW_TYPE_INT32, &test, " label='Number of cubes' min=1 max=100 keyIncr=c keyDecr=C help='Defines the number of cubes in the scene.' ");
 
 	//Initialize renderer
-	Renderer renderer;
+	Renderer renderer(&camera);
+	//Initialize camera
+	camera.SetLens(45.0f, 1.0f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	//Timer
+	uint32_t oldTime, currentTime;
+	float dt;
+
+	currentTime = SDL_GetTicks();
 
 	bool running = true;
 	while (running)
 	{
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		oldTime = currentTime;
+		currentTime = SDL_GetTicks();
+		dt = (currentTime - oldTime) / 1000.0f;
 
+		//Event handling
 		running = HandleEvents();
+
+		const Uint8* keystate = SDL_GetKeyboardState(NULL);
+
+		//Check keys
+		if (keystate[SDL_SCANCODE_A])
+			camera.MoveLeft(dt);
+		if (keystate[SDL_SCANCODE_D])
+			camera.MoveRight(dt);
+		if (keystate[SDL_SCANCODE_W])
+			camera.MoveForward(dt);
+		if (keystate[SDL_SCANCODE_S])
+			camera.MoveBackward(dt);
+		if (keystate[SDL_SCANCODE_SPACE])
+			camera.MoveUp(dt);
+		if (keystate[SDL_SCANCODE_LSHIFT])
+			camera.MoveDown(dt);
+
+		//Update camera matrices
+		camera.Update();
+
+		//Render
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Render all the things!
 		renderer.Draw();
@@ -97,6 +132,18 @@ bool HandleEvents()
 				{
 					case SDLK_ESCAPE:
 						return false;
+				}
+			} break;
+			//Move camera when left mouse button is pressed and mouse is moving!
+			case SDL_MOUSEMOTION:
+			{
+				if (e.motion.state & SDL_BUTTON_LMASK)
+				{
+					float pitch = -(float)e.motion.yrel / 10.0f;
+					float yaw	= -(float)e.motion.xrel / 10.0f;
+					
+					camera.Pitch(pitch);
+					camera.Yaw(yaw);
 				}
 			} break;
 		}
