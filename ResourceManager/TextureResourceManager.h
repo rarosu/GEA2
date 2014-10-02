@@ -7,14 +7,30 @@
 #include "ResourceContainer.h"
 #include "Filesystem.h"
 
+#include <glew.h>
+#include <mutex>
+
+struct Texture
+{
+	~Texture()
+	{
+		SDL_FreeSurface(surface);
+	}
+
+	SDL_Surface* surface;
+	GLuint texture;
+};
+
 class TextureResourceManager
 {
 PUBLIC:
 	TextureResourceManager(Filesystem* filesystem);
+	~TextureResourceManager();
 
-	Resource<SDL_Surface> Load(const std::string& vpath);
-	void Destructor(InternalResource<SDL_Surface>* internal);
+	Resource<Texture> Load(const std::string& vpath);
+	void Destructor(InternalResource<Texture>* internal);
 PRIVATE:
-	ResourceContainer<SDL_Surface> textures;
+	ResourceContainer<Texture> textures;
 	Filesystem* filesystem;
+	std::mutex mutex;
 };

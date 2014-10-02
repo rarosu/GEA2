@@ -53,7 +53,6 @@ Resource<T>::Resource(InternalResource<T>* internal, const DestructorFunction& d
 	this->resource = internal->resource;
 	this->internal = internal;
 	this->destructor = destructor;
-	
 	this->internal->refCount++;
 }
 
@@ -62,8 +61,7 @@ Resource<T>::Resource(const Resource<T>& resource)
 {
 	this->resource = resource.resource;
 	this->internal = resource.internal;
-	this->destructor = resource.destructor;
-	
+	this->destructor = resource.destructor;	
 	this->internal->refCount++;
 }
 

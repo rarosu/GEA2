@@ -12,10 +12,12 @@ void Worker::operator()()
 {
 	SDL_GL_MakeCurrent(g_window, context);
 
-	std::function<void()> task;
+	
 	while(true)
 	{
-		{
+		std::function<void()> task;
+
+		{	
 			std::unique_lock<std::mutex> lock(pool.mutex);
 		
 			while(pool.tasks.empty() && !pool.stop)
@@ -65,5 +67,5 @@ ThreadPool::~ThreadPool()
 	for(size_t i = 0; i < threads.size(); i++)
 	{
 		threads[i].join();
-	}
+	}	
 }

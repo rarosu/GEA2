@@ -2,6 +2,8 @@
 
 #include <map>
 #include <iostream>
+#include <atomic>
+#include <mutex>
 
 template <typename> class Resource;
 
