@@ -6,16 +6,21 @@
 #include <iostream>
 #include <filesystem>
 
+FilesystemArchive::~FilesystemArchive()
+{
+
+}
+
 bool FilesystemArchive::Open(const std::string& path)
 {
 	for (auto file : files)
 	{
 		file.second->Close();
+		delete file.second;
 	}
-
 	files.clear();
 
-	SearchDirectory(path);
+	SearchDirectory(path, "");
 
 	return true;
 }
@@ -28,29 +33,43 @@ std::vector<std::pair<std::string, File*>> FilesystemArchive::GetFiles()
 }
 
 
-void FilesystemArchive::SearchDirectory(const std::string& directory)
+void FilesystemArchive::SearchDirectory(const std::string& directory, const std::string& relative)
 {
 	for (std::tr2::sys::directory_iterator it(directory), end; it != end; ++it)
 	{
 		if (std::tr2::sys::is_directory(it->path()))
 		{
-			SearchDirectory(it->path());
+			SearchDirectory(it->path(), it->path().filename() + std::tr2::sys::slash<std::tr2::sys::path>::value);
 		}
 
 		if (std::tr2::sys::is_regular(it->path()))
 		{
+			files.push_back(std::pair<std::string, File*>(relative + it->path().filename(), new FilesystemFile(it->path().relative_path())));
+
 			std::cout << "Found regular: " << it->path().filename() << std::endl;
 			std::cout << "\tParent path: " << it->path().parent_path() << std::endl;
 			std::cout << "\tRelative path: " << it->path().relative_path() << std::endl;
 			std::cout << "\tRoot path: " << it->path().root_path() << std::endl;
 			std::cout << "\tBranch path: " << it->path().branch_path() << std::endl;
 			std::cout << "\tStem: " << it->path().stem() << std::endl;
+			std::cout << "\tMyRelative: " << relative + it->path().filename() << std::endl;
 			//std::cout << "Absolute path relative directory: " << std::tr2::sys:://std::tr2::sys::absolute(
 		}
 	}
 }
 
 
+
+FilesystemFile::FilesystemFile(const std::string& filepath) 
+	: file(nullptr)
+{
+	this->filepath = filepath;
+}
+
+FilesystemFile::~FilesystemFile()
+{
+	if (file != nullptr)
+}
 
 bool FilesystemFile::Open()
 {
@@ -60,7 +79,9 @@ bool FilesystemFile::Open()
 
 bool FilesystemFile::Close()
 {
-	return fclose(file) != EOF;
+	bool result = fclose(file) != EOF;
+	file = nullptr;
+	return result;
 }
 
 size_t FilesystemFile::Read(void* ptr, size_t byteCount)

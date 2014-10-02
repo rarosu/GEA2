@@ -64,4 +64,5 @@ TEST_F(FilesystemTest, ArchiveTest)
 TEST_F(FilesystemTest, DirectoryTest)
 {
 	fs.AddArchive<FilesystemArchive>("../Assets/TestDirectory/");
+	
 }

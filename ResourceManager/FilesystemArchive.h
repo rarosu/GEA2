@@ -5,6 +5,8 @@
 class FilesystemArchive : public Archive
 {
 public:
+	~FilesystemArchive();
+	
 	/**
 		Clears the archive and searches a directory recursively, adding all files it finds.
 
@@ -18,12 +20,14 @@ private:
 	/** 
 		Search one directory recursively.
 	*/
-	void SearchDirectory(const std::string& directory);
+	void SearchDirectory(const std::string& directory, const std::string& relative);
 };
 
 class FilesystemFile : public File
 {
 public:
+	FilesystemFile(const std::string& filepath);
+
 	/**
 		Open the file and set the position indicator for reading to the beginning.
 	*/
