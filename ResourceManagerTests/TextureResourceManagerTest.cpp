@@ -40,10 +40,6 @@ protected:
 	TextureResourceManager rm;
 };
 
-
-
-
-
 TextureResourceManager::TextureResourceManager(Filesystem* filesystem)
 {
 	this->filesystem = filesystem;
@@ -57,8 +53,6 @@ Resource<SDL_Surface> TextureResourceManager::Load(const std::string& vpath)
 	InternalResource<SDL_Surface>::Iterator internal = textures.GetResource(hash);
 	if (internal != textures.GetEnd())
 		return Resource<SDL_Surface>(internal, &textures, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
-
-
 
 	File* file = filesystem->GetFile(vpath);
 	

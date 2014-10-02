@@ -7,7 +7,6 @@
 #include <unzip.h>
 #include "Archive.h"
 
-
 class ZipArchive : public Archive
 {
 public:
