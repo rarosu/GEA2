@@ -4,6 +4,7 @@
 #include <Windows.h>
 #include <Shlwapi.h>
 #include <iostream>
+#include <filesystem>
 
 bool FilesystemArchive::Open(const std::string& path)
 {
@@ -29,23 +30,72 @@ std::vector<std::pair<std::string, File*>> FilesystemArchive::GetFiles()
 
 void FilesystemArchive::SearchDirectory(const std::string& directory)
 {
-	// Traverse the directory at the given path recursively.
-	TCHAR pathPattern[MAX_PATH];
-	WIN32_FIND_DATA fileFindData;
-	HANDLE file;
-
-	PathCombine(pathPattern, directory.c_str(), "*");
-	file = FindFirstFile(pathPattern, &fileFindData);
-	while (file != INVALID_HANDLE_VALUE)
+	for (std::tr2::sys::directory_iterator it(directory), end; it != end; ++it)
 	{
-		PathCombine(pathPattern, directory.c_str(), fileFindData.cFileName);
-		if (fileFindData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+		if (std::tr2::sys::is_directory(it->path()))
 		{
-			FilesystemArchive::Open(pathPattern);
+			SearchDirectory(it->path());
 		}
-		else
+
+		if (std::tr2::sys::is_regular(it->path()))
 		{
-			std::cout << pathPattern << std::endl;
+			std::cout << "Found regular: " << it->path().filename() << std::endl;
+			std::cout << "\tParent path: " << it->path().parent_path() << std::endl;
+			std::cout << "\tRelative path: " << it->path().relative_path() << std::endl;
+			std::cout << "\tRoot path: " << it->path().root_path() << std::endl;
+			std::cout << "\tBranch path: " << it->path().branch_path() << std::endl;
+			std::cout << "\tStem: " << it->path().stem() << std::endl;
+			//std::cout << "Absolute path relative directory: " << std::tr2::sys:://std::tr2::sys::absolute(
 		}
 	}
+}
+
+
+
+bool FilesystemFile::Open()
+{
+	file = fopen(filepath.c_str(), "rb");
+	return file != NULL;
+}
+
+bool FilesystemFile::Close()
+{
+	return fclose(file) != EOF;
+}
+
+size_t FilesystemFile::Read(void* ptr, size_t byteCount)
+{
+	return fread(ptr, byteCount, 1, file);
+}
+
+bool FilesystemFile::Seek(long int offset, File::Origin origin)
+{
+	int o;
+	switch (origin)
+	{
+		case File::ORIGIN_BEG:
+			o = SEEK_SET;
+			break;
+		case File::ORIGIN_CUR:
+			o = SEEK_CUR;
+			break;
+		default:
+			o = SEEK_CUR;
+	}
+
+	return fseek(file, offset, o) != 0;
+}
+
+long int FilesystemFile::Tell()
+{
+	return ftell(file);
+}
+
+long int FilesystemFile::GetFileSize()
+{
+	long int current = ftell(file);
+	fseek(file, 0, SEEK_END);
+	long int size = ftell(file);
+	fseek(file, current, SEEK_SET);
+	return size;
 }
