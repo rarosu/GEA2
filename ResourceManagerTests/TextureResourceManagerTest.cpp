@@ -30,7 +30,7 @@ TEST_F(TextureResourceManagerTest, TextureLoad)
 
 	{
 		Resource<SDL_Surface> r1 = rm.Load("TestTexture.png");
-		ASSERT_FALSE(r1.IsEmpty());
+		ASSERT_NE(r1, nullptr);
 
 		ASSERT_EQ(r1->w, 1406);
 		ASSERT_EQ(r1->h, 681);
@@ -42,5 +42,5 @@ TEST_F(TextureResourceManagerTest, TextureLoad)
 	ASSERT_EQ(rm.textures.resources.size(), 0);
 
 	Resource<SDL_Surface> r2 = rm.Load("NotExisting.png");
-	ASSERT_TRUE(r2.IsEmpty());
+	ASSERT_EQ(r2, nullptr);
 }

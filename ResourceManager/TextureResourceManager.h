@@ -13,7 +13,7 @@ PUBLIC:
 	TextureResourceManager(Filesystem* filesystem);
 
 	Resource<SDL_Surface> Load(const std::string& vpath);
-	void Destructor(const InternalResource<SDL_Surface>::Iterator& iterator);
+	void Destructor(InternalResource<SDL_Surface>* internal);
 PRIVATE:
 	ResourceContainer<SDL_Surface> textures;
 	Filesystem* filesystem;

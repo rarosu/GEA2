@@ -18,9 +18,10 @@ template <typename> class Resource;
 template <typename T>
 struct InternalResource
 {
-	typedef typename std::map<size_t, InternalResource<T>>::iterator Iterator;
+	typedef typename std::map<size_t, InternalResource<T>*>::iterator Iterator;
 
 	T* resource;
+	size_t hash;
 	int refCount;
 };
 
@@ -29,54 +30,63 @@ class ResourceContainer
 {
 	template <typename> friend class Resource;
 PUBLIC:
-	typename InternalResource<T>::Iterator AddResource(size_t hash, T* resource);
-	typename InternalResource<T>::Iterator GetResource(size_t hash);
-	void RemoveResource(const typename InternalResource<T>::Iterator& iterator);
+	~ResourceContainer();
+	InternalResource<T>* AddResource(size_t hash, T* resource);
+	InternalResource<T>* GetResource(size_t hash);
+	void RemoveResource(size_t hash);
 
-	typename InternalResource<T>::Iterator GetEnd();
 PRIVATE:
-	std::map<size_t, InternalResource<T>> resources;
+	std::map<size_t, InternalResource<T>*> resources;
 };
 
-
-
-
+template <typename T>
+ResourceContainer<T>::~ResourceContainer()
+{
+	for (auto resource : resources)
+	{
+		delete resource.second;
+	}
+}
 
 template <typename T>
-typename InternalResource<T>::Iterator ResourceContainer<T>::AddResource(size_t hash, T* resource)
+InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
 {
-	InternalResource<T> internal;
-	internal.resource = resource;
-	internal.refCount = 0;
+	InternalResource<T>* internal = new InternalResource<T>;
+	internal->resource = resource;
+	internal->hash = hash;
+	internal->refCount = 0;
 
-	std::pair<InternalResource<T>::Iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>>(hash, internal));
+	std::pair<InternalResource<T>::Iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>*>(hash, internal));
 
 #ifdef _DEBUG
 	if (!result.second)
 	{
-		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << result.first->second.resource << " with " << resource << std::endl;
-		return resources.end();
+		std::cerr << "Overwriting hash " << std::hex << hash << " containing pointer " << result.first->second->resource << " with " << resource << std::endl;
+		delete internal;
+		return nullptr;
 	}
 #endif
 
-	return result.first;
+	return internal;
 }
 
 template <typename T>
-typename InternalResource<T>::Iterator ResourceContainer<T>::GetResource(size_t hash)
+InternalResource<T>* ResourceContainer<T>::GetResource(size_t hash)
 {
-	return resources.find(hash);
+	InternalResource<T>::Iterator itr = resources.find(hash);
+	if (itr == resources.end())
+	{
+		return nullptr;
+	}
+
+	return itr->second;
 }
 
-
 template <typename T>
-void ResourceContainer<T>::RemoveResource(const typename InternalResource<T>::Iterator& iterator)
+void ResourceContainer<T>::RemoveResource(size_t hash)
 {
-	resources.erase(iterator);
-}
+	InternalResource<T>::Iterator itr = resources.find(hash);
+	delete itr->second;
 
-template <typename T>
-typename InternalResource<T>::Iterator ResourceContainer<T>::GetEnd()
-{
-	return resources.end();
+	resources.erase(itr);
 }
