@@ -1,2 +1,2 @@
-premake4.exe vs2012
+premake4.exe vs2013
 pause
