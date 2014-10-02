@@ -15,8 +15,6 @@ public:
 	bool Open(const std::string& path);
 	std::vector<std::pair<std::string, File*>> GetFiles();
 private:
-	std::vector<std::pair<std::string, File*>> files;
-
 	/** 
 		Search one directory recursively.
 	*/
@@ -27,6 +25,7 @@ class FilesystemFile : public File
 {
 public:
 	FilesystemFile(const std::string& filepath);
+	~FilesystemFile();
 
 	/**
 		Open the file and set the position indicator for reading to the beginning.
