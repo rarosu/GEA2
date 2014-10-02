@@ -1,7 +1,9 @@
 #pragma once
 
 #include <glew.h>
+#include <glm.hpp>
 #include "ShaderProgram.h"
+#include "Mesh.h"
 
 class Renderer
 {
@@ -14,7 +16,5 @@ public:
 private:
 
 	ShaderProgram shaderProgram;
-
-	//test
-	GLuint vao;
+	Mesh testMesh;
 };
