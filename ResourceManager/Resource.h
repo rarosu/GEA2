@@ -20,7 +20,6 @@ PUBLIC:
 	typedef std::function<void(typename const InternalResource<T>::Iterator&)> DestructorFunction;
 
 	static Resource<T> GetEmptyResource(ResourceContainer<T>* container);
-
 	Resource(typename const InternalResource<T>::Iterator& internal, ResourceContainer<T>* container, const DestructorFunction& destructor);
 	Resource(const Resource<T>& resource);
 	~Resource();
