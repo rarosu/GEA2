@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Chunk/Chunk.h"
+#include "Chunk/ChunkManager.h"
 #include "Texture.h"
 
 class Renderer
@@ -16,13 +17,16 @@ public:
 
 	void Draw();
 
+	//Quick and dirty block destroyer, remove if needed
+	void DestroyBlock();
+
 private:
 
 	ShaderProgram shaderProgram;
 	Camera* camera;
 	Buffer cameraBuffer;
 
-	//Test chunk
-	Chunk chunkychunk;
+	//Test chunkmanager
+	ChunkManager chunkyChunkMan;
 	Texture texture;
 };

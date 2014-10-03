@@ -18,6 +18,7 @@ public:
 	 glm::mat4& GetViewMatrix();
 	 glm::mat4& GetProjectionMatrix();
 	 glm::mat4& GetViewProjMatrix();
+	 glm::vec3& GetFacing();
 
 	//Easy move methods
 	void MoveForward(float dt);

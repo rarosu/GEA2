@@ -1,15 +1,9 @@
-#ifndef CMANAGER
-#define CMANAGER
-
-#include "d3dUtil.h"
-#include "stdafx.h"
-#include "Shader.h"
-#include "Buffer.h"
+#pragma once
 #include <string>
 #include <vector>
 #include "Chunk.h"
 #include <cstdint>
-#include "simplexnoise.h"
+
 
 #define SCX 16
 #define SCY 8
@@ -18,25 +12,22 @@
 class ChunkManager
 {
 public:
-	ChunkManager(ID3D10Device*	p_d3dDevice);
+	ChunkManager();
 	~ChunkManager();
-	uint8_t get(int x, int y, int z);
-	void set(int x, int y, int z, uint8_t type);
-	void render(D3DXMATRIX p_viewMatrix, D3DXMATRIX p_projMatrix);
+	uint8_t Get(int x, int y, int z);
+	void Set(int x, int y, int z, uint8_t type);
+	void Draw();
 
-	int getNrOfBlocks();
-	int getNrOfChunks();
+	int GetNrOfBlocks();
+	int GetNrOfChunks();
 
-	void generateSimplexTerrain();
+	void GenerateTerrain();
 
 private:
-	//DX10 device
-	ID3D10Device*	m_d3dDevice;
-	Chunk* m_chunkList[SCX][SCY][SCZ];
-	Shader* m_shader;
+	Chunk* chunkList[SCX][SCY][SCZ];
 
-	int m_nrOfChunks;
-	int m_nrOfBlocks;
+	int nrOfChunks;
+	int nrOfBlocks;
+
+	Buffer worldMatBuf;
 };
-
-#endif

@@ -95,3 +95,8 @@ void Camera::MoveDown(float dt)
 {
 	position -= camSpeed * dt * up;
 }
+
+glm::vec3& Camera::GetFacing()
+{
+	return facing;
+}

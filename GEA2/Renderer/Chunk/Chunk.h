@@ -10,6 +10,7 @@
 #define CX 16
 #define CY 32
 #define CZ 16
+
 //Number of textures in texture atlas in x and y coords. Change this to match actual texture atlas!
 #define ATLASTEXTURES_X 16
 #define ATLASTEXTURES_Y 16
@@ -19,7 +20,7 @@ typedef glm::detail::tvec4<uint8_t, glm::lowp> byte4;
 class Chunk
 {
 public:
-	Chunk();
+	Chunk(const glm::vec3& worldPos);
 	~Chunk();
 
 	//Get block type at chunk relative position
@@ -50,6 +51,9 @@ public:
 	//Flag to tell the manager if the chunk need updating
 	bool	changed;
 
+	//Temp world matrix
+	glm::mat4 worldMatrix;
+
 private:
 
 	//Number of elements
@@ -57,4 +61,6 @@ private:
 
 	//vertex buffer
 	Mesh* chunkMesh;
+
+	
 };

@@ -1,15 +1,18 @@
 #include "Chunk.h"
 #include <iostream>
 #include <gtc/noise.hpp>
+#include <gtc/matrix_transform.hpp>
 
-Chunk::Chunk()
+Chunk::Chunk(const glm::vec3& worldPos)
 	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr)
 {
+	worldMatrix = glm::translate(worldMatrix, worldPos);
 	memset(blockList, 0, sizeof(blockList));
 }
 
 Chunk::~Chunk()
 {
+	delete chunkMesh;
 }
 
 void Chunk::UpdateChunk()

@@ -11,6 +11,7 @@ const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
 Camera camera;
+Renderer* renderer;
 SDL_Window* window;
 SDL_GLContext context;
 TwBar* antbar;
@@ -62,9 +63,9 @@ int main(int argc, char* argv[])
 	TwAddVarRW(antbar, "Test", TW_TYPE_INT32, &test, " label='Number of cubes' min=1 max=100 keyIncr=c keyDecr=C help='Defines the number of cubes in the scene.' ");
 
 	//Initialize renderer
-	Renderer renderer(&camera);
+	renderer = new Renderer(&camera);
 	//Initialize camera
-	camera.SetLens(45.0f, 1.0f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 0.1f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -105,12 +106,13 @@ int main(int argc, char* argv[])
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Render all the things!
-		renderer.Draw();
+		renderer->Draw();
 
 		TwDraw();
 		SDL_GL_SwapWindow(window);
 	}
 
+	delete renderer;
 	TwTerminate();
 	IMG_Quit();
 	SDL_GL_DeleteContext(context);
@@ -135,6 +137,10 @@ bool HandleEvents()
 				{
 					case SDLK_ESCAPE:
 						return false;
+					case SDLK_f:
+					{
+						renderer->DestroyBlock();
+					}break;
 				}
 			} break;
 			//Move camera when left mouse button is pressed and mouse is moving!

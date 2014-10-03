@@ -8,9 +8,6 @@ Renderer::Renderer(Camera* camera)
 	//Set up camera buffer
 	cameraBuffer.BufferData(1, sizeof(glm::mat4), &camera->GetViewProjMatrix(), GL_DYNAMIC_DRAW);
 
-	//Testing chunk
-	chunkychunk.Noise(0, 0, 0, 0);
-
 	texture.Load("../Assets/testBlockTex.png");
 }
 
@@ -27,8 +24,24 @@ void Renderer::Draw()
 	texture.Bind(0);
 	shaderProgram.Use();
 	//Testing chunkychunk
-	chunkychunk.Draw();
+	chunkyChunkMan.Draw();
 
 	texture.Unbind(0);
+}
+
+void Renderer::DestroyBlock()
+{
+	glm::vec3 pos = camera->GetPosition();
+	glm::vec3 dir = glm::normalize(camera->GetFacing());
+
+	for (int i = 0; i < 20; ++i)
+	{
+		if (chunkyChunkMan.Get((int)pos.x, (int)pos.y, (int)pos.z) != 0)
+		{
+			chunkyChunkMan.Set((int)pos.x, (int)pos.y, (int)pos.z, 0);
+			break;
+		}
+		pos += dir*0.5f;
+	}
 }
 
