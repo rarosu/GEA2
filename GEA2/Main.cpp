@@ -7,8 +7,8 @@
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
 
-const int WINDOW_WIDTH = 800;
-const int WINDOW_HEIGHT = 600;
+const int WINDOW_WIDTH = 1280;
+const int WINDOW_HEIGHT = 720;
 
 Camera camera;
 SDL_Window* window;
@@ -146,6 +146,22 @@ bool HandleEvents()
 					camera.Yaw(yaw);
 				}
 			} break;
+			case SDL_WINDOWEVENT:
+			{
+				switch (e.window.event)
+				{
+					case SDL_WINDOWEVENT_RESIZED:
+					{
+						int w = e.window.data1;
+						int h = e.window.data2;
+
+						glViewport(0, 0, w, h);
+						TwWindowSize(w, h);
+						camera.SetLens(45.0f, 1.0f, 1000.0f, w, h);
+
+					}break;
+				}
+			}break;
 		}
 	}
 

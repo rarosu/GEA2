@@ -5,6 +5,7 @@
 #include "ShaderProgram.h"
 #include "Mesh.h"
 #include "Camera.h"
+#include "Chunk/Chunk.h"
 
 class Renderer
 {
@@ -17,7 +18,9 @@ public:
 private:
 
 	ShaderProgram shaderProgram;
-	Mesh testMesh;
 	Camera* camera;
 	Buffer cameraBuffer;
+
+	//Test chunk
+	Chunk chunkychunk;
 };
