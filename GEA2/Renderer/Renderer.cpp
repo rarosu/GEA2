@@ -10,6 +10,8 @@ Renderer::Renderer(Camera* camera)
 
 	//Testing chunk
 	chunkychunk.Noise(0, 0, 0, 0);
+
+	texture.Load("../Assets/testBlockTex.png");
 }
 
 Renderer::~Renderer()
@@ -22,8 +24,11 @@ void Renderer::Draw()
 	cameraBuffer.BufferSubData(0, sizeof(glm::mat4), &camera->GetViewProjMatrix());
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraBuffer.GetBufferId());
 
+	texture.Bind(0);
 	shaderProgram.Use();
 	//Testing chunkychunk
 	chunkychunk.Draw();
+
+	texture.Unbind(0);
 }
 

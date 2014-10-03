@@ -35,9 +35,9 @@ void Mesh::CreateVertexBuffer( Vertex* vertices, unsigned numberOfVertices )
 {
 	vertexBuffer.BufferData(numberOfVertices, sizeof(Vertex), vertices, GL_STATIC_DRAW);
 	vertexAttributes.Init(3);
-	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 0, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
-	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (char*)0 + 4 * sizeof(float));
-	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (char*)0 + 7 * sizeof(float));
+	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
+	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (char*)0 + 3 * sizeof(float));
+	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (char*)0 + 6 * sizeof(float));
 }
 
 void Mesh::Bind()

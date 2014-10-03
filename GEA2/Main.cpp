@@ -53,6 +53,8 @@ int main(int argc, char* argv[])
 	glCullFace(GL_BACK);	
 	glFrontFace(GL_CCW);
 
+	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
+
 	TwInit(TW_OPENGL_CORE, NULL);
 	TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	antbar = TwNewBar("GEABar");
@@ -110,6 +112,7 @@ int main(int argc, char* argv[])
 	}
 
 	TwTerminate();
+	IMG_Quit();
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
 	return 0;

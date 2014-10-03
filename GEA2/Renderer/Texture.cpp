@@ -19,14 +19,20 @@ void Texture::Load(const char* filePath)
 		std::cout << "Texture load failed!" << std::endl;
 		return;
 	}
+	 
 	glBindTexture(GL_TEXTURE_2D, textureHandle);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surf->w, surf->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, NULL);
+	
+	if (surf->format->BytesPerPixel == 3)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, surf->w, surf->h, 0, GL_RGB, GL_UNSIGNED_BYTE, surf->pixels);
+	else if (surf->format->BytesPerPixel == 4)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, surf->w, surf->h, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels);
+	else
+		std::cout << "Texture format not supported!" << std::endl;
 
 	SDL_FreeSurface(surf);
 }

@@ -17,12 +17,13 @@ vec4(0.1, 0.6, 0.0, 1.0) //leaf5 12
 
 in vec3 out_norm;
 in vec2 out_texc;
-in flat int out_materialIndex;
 in flat float out_shade;
 
 out vec4 color;
 
+layout(binding = 0) uniform sampler2D diffuseTex;
+
 void main()
 {
-	color = g_colors[out_materialIndex-1] * out_shade;
+	color = texture(diffuseTex, out_texc) * out_shade;
 }

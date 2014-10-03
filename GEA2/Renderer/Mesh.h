@@ -7,11 +7,12 @@
 
 struct Vertex  
 {
-	Vertex(glm::vec4 pos, glm::vec3 norm)
-		: position(pos), normal(norm){}
+	Vertex(glm::vec4 pos, glm::vec3 norm, glm::vec2 texC)
+		: position(pos), normal(glm::vec4(norm, 0)), textureC(texC){}
 
-	glm::vec4 position;
+	glm::vec3 position;
 	glm::vec3 normal;
+	glm::vec2 textureC;
 };
 
 class Mesh

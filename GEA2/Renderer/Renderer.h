@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Camera.h"
 #include "Chunk/Chunk.h"
+#include "Texture.h"
 
 class Renderer
 {
@@ -23,4 +24,5 @@ private:
 
 	//Test chunk
 	Chunk chunkychunk;
+	Texture texture;
 };
