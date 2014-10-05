@@ -41,6 +41,7 @@ public:
 	//Block list
 	uint8_t	blockList[CX][CY][CZ];
 
+	//Pointers to neighbour chunks, nullptr if no neighbour
 	Chunk* left;
 	Chunk* right;
 	Chunk* below;

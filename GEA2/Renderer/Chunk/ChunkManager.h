@@ -5,9 +5,9 @@
 #include <cstdint>
 
 
-#define SCX 16
-#define SCY 8
-#define SCZ 16
+#define SCX 1
+#define SCY 1
+#define SCZ 1
 
 class ChunkManager
 {

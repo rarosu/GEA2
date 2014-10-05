@@ -1,7 +1,7 @@
 #include "Camera.h"
 
 Camera::Camera()
-	: position(glm::vec3(0, 0, 10)), up(glm::vec3(0, 1, 0)), facing(glm::vec3(0, 0, -1)), right(glm::vec3(1, 0, 0)), camSpeed(10.0f)
+	: position(glm::vec3(0, 0, -50)), up(glm::vec3(0, 1, 0)), facing(glm::vec3(0, 0, 1)), right(glm::vec3(-1, 0, 0)), camSpeed(10.0f)
 {
 	viewMatrix = glm::lookAt(position, position + facing, up);
 }
@@ -99,4 +99,9 @@ void Camera::MoveDown(float dt)
 glm::vec3& Camera::GetFacing()
 {
 	return facing;
+}
+
+float& Camera::GetSpeed()
+{
+	return camSpeed;
 }

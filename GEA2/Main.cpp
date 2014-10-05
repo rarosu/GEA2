@@ -46,7 +46,7 @@ int main(int argc, char* argv[])
 	glewInit();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glClearColor(1, 0, 0, 0);
+	glClearColor(135.0f/255.0f, 206.0f/255.0f, 250.0f/255.0f, 0); // some blue clear color as sky
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glEnable(GL_DEPTH_TEST);
@@ -62,11 +62,14 @@ int main(int argc, char* argv[])
 	
 
 	//Initialize renderer
-	renderer = new Renderer(&camera);
+	renderer = new Renderer(&camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+
 	//Initialize camera
 	camera.SetLens(45.0f, 0.01f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	//Set up some anttweakbar bars
 	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(renderer->GetChunkManager()->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
+	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -86,7 +89,7 @@ int main(int argc, char* argv[])
 
 		const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
-		//Check keys
+		//Check keys and move camera
 		if (keystate[SDL_SCANCODE_A])
 			camera.MoveLeft(dt);
 		if (keystate[SDL_SCANCODE_D])
@@ -102,9 +105,6 @@ int main(int argc, char* argv[])
 
 		//Update camera matrices
 		camera.Update();
-
-		//Render
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		//Render all the things!
 		renderer->Draw();
@@ -163,12 +163,14 @@ bool HandleEvents()
 				{
 					case SDL_WINDOWEVENT_RESIZED:
 					{
+						//window resize event, call appropriate resize functions
 						int w = e.window.data1;
 						int h = e.window.data2;
 
 						glViewport(0, 0, w, h);
 						TwWindowSize(w, h);
 						camera.SetLens(45.0f, 0.01f, 1000.0f, w, h);
+						renderer->Resize(w, h);
 
 					}break;
 				}

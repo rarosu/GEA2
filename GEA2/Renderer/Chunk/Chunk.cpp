@@ -7,11 +7,13 @@ Chunk::Chunk(const glm::vec3& worldPos)
 	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
+	//Set all blocks in chunk to 0 (air), this causes the mesh generation to not create any vertices, see UpdateChunk() for deatails
 	memset(blockList, 0, sizeof(blockList));
 }
 
 Chunk::~Chunk()
 {
+	//Delete chunk mesh on chunk destruction
 	if (chunkMesh)
 		delete chunkMesh;
 }
@@ -19,7 +21,6 @@ Chunk::~Chunk()
 void Chunk::UpdateChunk()
 {
 	changed = false;
-	float testUV = 1.0f / 512.0f;
 
 	std::vector<Vertex> renderList;
 
@@ -41,10 +42,13 @@ void Chunk::UpdateChunk()
 				///Calculate correct UV mapped to atlas
 				uint8_t blockType = blockList[x][y][z];
 
+				//UV coord size for a block side on the texture atlas
 				glm::vec2 blockUVSize = glm::vec2(1.0f / ATLASTEXTURES_X, 1.0f / ATLASTEXTURES_Y);
 				
+				//2D index of where on the atlas the block type has its texture part
 				glm::ivec2 textureAtlasPosition = glm::ivec2((blockType - 1) % ATLASTEXTURES_X, (blockType - 1) / ATLASTEXTURES_Y);
 
+				//Calculate absolute UV coords for the 3 different block parts, top, side and bottom. These are used to sample the atlas directly in the shader
 				//UV for top face
 				float x0 = textureAtlasPosition.x * blockUVSize.x;
 				float x1 = x0 + blockUVSize.x;
@@ -133,9 +137,11 @@ void Chunk::UpdateChunk()
 
 	numberOfElements = renderList.size();
 
+	//Delete old mesh 
 	if (chunkMesh)
 		delete chunkMesh;
 
+	//Don't create mesh if all blocks are air
 	if (numberOfElements == 0)
 		return;
 
@@ -150,8 +156,10 @@ void Chunk::Draw()
 	if(changed)
 		UpdateChunk();
 
+	//Don't draw if there are no vertices of no mesh ( these go hand-in-hand and only one is actually needed, but keeping them both for security)
 	if(!numberOfElements)
 		return;
+
 	if (!chunkMesh)
 		return;
 
@@ -161,7 +169,7 @@ void Chunk::Draw()
 
 void Chunk::Set( int x, int y, int z, uint8_t type )
 {
-	//If coordinates are outside this chunk, find the right one.
+	//If coordinates are outside this chunk, find the right neighbour chunk and tell it to change the right block.
 	if(x < 0) 
 	{
 		if(left)
@@ -221,6 +229,7 @@ void Chunk::Set( int x, int y, int z, uint8_t type )
 
 uint8_t Chunk::Get( int x, int y, int z )
 {
+	//Get block type at position, if outside of this chunk, get from neighbour
 	if(x < 0)
 		return left ? left->blockList[x + CX][y][z] : 0;
 	if(x >= CX)
@@ -237,6 +246,7 @@ uint8_t Chunk::Get( int x, int y, int z )
 	return blockList[x][y][z];
 }
 
+//2D Octave simplex noise
 static float noise2d(float x, float y, int seed, int octaves, float persistence) {
 	float sum = 0;
 	float strength = 1.0;
@@ -252,6 +262,7 @@ static float noise2d(float x, float y, int seed, int octaves, float persistence)
 	return sum;
 }
 
+//3D octave simplex noise
 static float noise3d_abs(float x, float y, float z, int seed, int octaves, float persistence) {
 	float sum = 0;
 	float strength = 1.0;
@@ -267,18 +278,20 @@ static float noise3d_abs(float x, float y, float z, int seed, int octaves, float
 	return sum;
 }
 
+//Chunk data generation
 void Chunk::Noise(int seed, int ax, int ay, int az) 
 {
+	//Go through all blocks in X and Z to build each column from y == 0
 	for(int x = 0; x < CX; x++) 
 	{
 		for(int z = 0; z < CZ; z++) 
 		{
-			// Land height
+			// Land height, get the height at a specific X,Z coord
 			float n = noise2d((x + ax * CX) / 256.0f, (z + az * CZ) / 256.0f, seed, 5, 0.8f) * 2;
 			int h = (int)(n * 2);
 			int y = 0;
 
-			// Land blocks
+			// Land blocks, start building the Y column
 			for(y = 0; y < CY; y++) 
 			{
 				// Are we above "ground" level?
@@ -294,7 +307,7 @@ void Chunk::Noise(int seed, int ax, int ay, int az)
 					else 
 					{
 						// A tree!
-						if(Get(x, y - 1, z) == 8 && (rand() & 0xff) == 0) 
+						if(Get(x, y - 1, z) == 1 && (rand() % 200) == 0) 
 						{
 							// Trunk
 							h = (rand() & 0x3) + 3;
@@ -320,7 +333,7 @@ void Chunk::Noise(int seed, int ax, int ay, int az)
 
 				// Random value used to determine land type
 				float r = noise3d_abs((x + ax * CX) / 16.0f, (y + ay * CY) / 16.0f, (z + az * CZ) / 16.0f, -seed, 2, 1);
-				//r--; // Rescale r value to allow for more sand 
+				r-= 0.5f; // Rescale r value to allow for more sand 
 				// Sand layer
 				if(n + r * 5 < 4)
 					Set(x, y, z, 3);
@@ -330,10 +343,10 @@ void Chunk::Noise(int seed, int ax, int ay, int az)
 				// Dirt layer, but use grass blocks for the top
 				else if(r < 1.25)
 					Set(x, y, z, (h < SEALEVEL || y + ay * CY < h - 1) ? 2 : 1);
-				// Sometimes, ores. But only 3 beloy the grass line!
+				// Sometimes, ores. But only at least 10 below the grass line!
 				else if (h < SEALEVEL || y + ay * CY < h - 10)
 					Set(x, y, z, 7);
-				else 
+				else //Grass blocks as default, this is not correct but works OK
 					Set(x, y, z, 1);
 			}
 		}
