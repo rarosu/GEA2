@@ -19,7 +19,8 @@ public:
 
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
-
+	//Return pointer to chunkychunk
+	ChunkManager* GetChunkManager();
 private:
 
 	ShaderProgram shaderProgram;

@@ -18,7 +18,7 @@ public:
 	void Set(int x, int y, int z, uint8_t type);
 	void Draw();
 
-	int GetNrOfBlocks();
+	int& GetNrOfBlocks();
 	int GetNrOfChunks();
 
 	void GenerateTerrain();

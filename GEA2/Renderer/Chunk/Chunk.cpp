@@ -12,7 +12,8 @@ Chunk::Chunk(const glm::vec3& worldPos)
 
 Chunk::~Chunk()
 {
-	delete chunkMesh;
+	if (chunkMesh)
+		delete chunkMesh;
 }
 
 void Chunk::UpdateChunk()

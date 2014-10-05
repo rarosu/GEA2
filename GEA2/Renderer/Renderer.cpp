@@ -34,14 +34,19 @@ void Renderer::DestroyBlock()
 	glm::vec3 pos = camera->GetPosition();
 	glm::vec3 dir = glm::normalize(camera->GetFacing());
 
-	for (int i = 0; i < 20; ++i)
+	for (int i = 0; i < 50; ++i)
 	{
 		if (chunkyChunkMan.Get((int)pos.x, (int)pos.y, (int)pos.z) != 0)
 		{
 			chunkyChunkMan.Set((int)pos.x, (int)pos.y, (int)pos.z, 0);
 			break;
 		}
-		pos += dir*0.5f;
+		pos += dir*0.1f;
 	}
+}
+
+ChunkManager* Renderer::GetChunkManager()
+{
+	return &chunkyChunkMan;
 }
 

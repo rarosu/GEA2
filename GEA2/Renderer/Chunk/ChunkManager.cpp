@@ -33,7 +33,7 @@ ChunkManager::ChunkManager()
 
 	GenerateTerrain();
 
-	nrOfChunks = SCX*SCX*SCZ;
+	nrOfChunks = SCX*SCY*SCZ;
 	nrOfBlocks = nrOfChunks*CX*CY*CZ;
 }
 
@@ -41,8 +41,8 @@ ChunkManager::ChunkManager()
 ChunkManager::~ChunkManager()
 {
 	for(int x = 0; x < SCX; x++)
-		for(int y = 0; y < SCX; y++)
-			for(int z = 0; z < SCX; z++)
+		for (int y = 0; y < SCY; y++)
+			for (int z = 0; z < SCZ; z++)
 				delete chunkList[x][y][z];
 }
 
@@ -96,7 +96,7 @@ void ChunkManager::Set( int x, int y, int z, uint8_t type )
 	chunkList[cx][cy][cz]->Set(x, y, z, type);
 }
 
-int ChunkManager::GetNrOfBlocks()
+int& ChunkManager::GetNrOfBlocks()
 {
 	return nrOfBlocks;
 }

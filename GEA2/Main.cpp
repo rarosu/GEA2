@@ -15,7 +15,6 @@ Renderer* renderer;
 SDL_Window* window;
 SDL_GLContext context;
 TwBar* antbar;
-int test;
 
 #undef main
 
@@ -60,12 +59,14 @@ int main(int argc, char* argv[])
 	TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	antbar = TwNewBar("GEABar");
 
-	TwAddVarRW(antbar, "Test", TW_TYPE_INT32, &test, " label='Number of cubes' min=1 max=100 keyIncr=c keyDecr=C help='Defines the number of cubes in the scene.' ");
+	
 
 	//Initialize renderer
 	renderer = new Renderer(&camera);
 	//Initialize camera
-	camera.SetLens(45.0f, 0.1f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 0.01f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+
+	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(renderer->GetChunkManager()->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -140,6 +141,7 @@ bool HandleEvents()
 					case SDLK_f:
 					{
 						renderer->DestroyBlock();
+						TwRefreshBar(antbar);
 					}break;
 				}
 			} break;
@@ -166,7 +168,7 @@ bool HandleEvents()
 
 						glViewport(0, 0, w, h);
 						TwWindowSize(w, h);
-						camera.SetLens(45.0f, 1.0f, 1000.0f, w, h);
+						camera.SetLens(45.0f, 0.01f, 1000.0f, w, h);
 
 					}break;
 				}
