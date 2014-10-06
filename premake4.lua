@@ -25,7 +25,7 @@ solution "GEA2"
 		kind "StaticLib"
 		language "C++"
 		files { "ResourceManager/**.h", "ResourceManager/**.cpp" }
-		links { "zlibwapi/lib/zlibwapi" }
+		links { "zlibwapi/lib/zlibwapi", "Shlwapi" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
 	project "ResourceManagerTests"
 		kind "ConsoleApp"
