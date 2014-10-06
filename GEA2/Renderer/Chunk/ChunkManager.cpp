@@ -1,5 +1,6 @@
 #include "ChunkManager.h"
-
+#include "../../RLE/rle.c"
+#include <fstream>
 
 ChunkManager::ChunkManager()
 	: worldMatBuf(GL_UNIFORM_BUFFER)
@@ -32,6 +33,7 @@ ChunkManager::ChunkManager()
 			}
 
 	GenerateTerrain();
+	Export();
 
 	nrOfChunks = SCX*SCY*SCZ;
 	nrOfBlocks = nrOfChunks*CX*CY*CZ;
@@ -118,4 +120,50 @@ void ChunkManager::GenerateTerrain()
 			}
 		}
 	}
+}
+
+void ChunkManager::Export()
+{
+	struct header_element{
+		int adress;
+		int size;
+	};
+
+	int header_size = SCX * SCY * SCZ * sizeof(header_element) + sizeof(int);
+	header_element* header = new header_element[SCX * SCY * SCZ];
+	memset(header, 0, header_size - sizeof(int));
+	std::ofstream s;
+	s.open("world.world", std::ios_base::binary);
+	
+	s.write((char*)&header_size, sizeof(int));
+	s.write((char*)header, header_size - sizeof(int));
+
+	int i = 0;
+	for (int x = 0; x < SCX; ++x)
+	{
+		for (int y = 0; y < SCY; ++y)
+		{
+			for (int z = 0; z < SCZ; ++z)
+			{
+				Chunk* current = chunkList[x][y][z];
+				unsigned char* compressed = new unsigned char[CX * CY * CZ];
+				header[i].size = RLE_Compress((unsigned char*)current->blockList, compressed, CX * CY * CZ);
+				s.write((char*)compressed, header[i].size);
+
+				int address = (i != 0) ? header[i - 1].adress + header[i - 1].size : header_size;
+				header[i].adress = address;
+				
+				++i;
+
+				delete[] compressed;
+			}
+		}
+	}
+
+	s.seekp(std::ios_base::beg + sizeof(int));
+	s.write((char*)header, header_size - sizeof(int));
+
+	s.flush();
+	s.close();
+	delete[] header;
 }
