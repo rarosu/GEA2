@@ -1,7 +1,13 @@
 #include "MemoryAllocator.h"
 
-MemoryAllocator::MemoryAllocator(std::ostream& _logger)
-	: logger(_logger) {}
+MemoryAllocator::~MemoryAllocator()
+{
+	std::cout << "-- Unallocated Memory --" << std::endl;
+	for (auto it : allocations)
+	{
+		std::cout << "[" << it.second.name << "] " << it.first << " with size " << it.second.size << std::endl;
+	}
+}
 
 MemoryAllocatorInterface MemoryAllocator::GetInterface(const std::string& name)
 {
@@ -12,14 +18,20 @@ void* MemoryAllocator::Alloc(const MemoryAllocatorInterface& interface, size_t b
 {
 	void* ptr = new char[bytecount];
 
-	logger << interface.GetName() << " allocated " << bytecount << " (" << ptr << ")" << std::endl;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		allocations[ptr] = { bytecount, interface.GetName() };
+	}
 	
 	return ptr;
 }
 
 void MemoryAllocator::Free(const MemoryAllocatorInterface& interface, void* ptr)
 {
-	logger << interface.GetName() << " deleted " << ptr << std::endl;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		allocations.erase(ptr);
+	}
 
 	delete[] ptr;
 }

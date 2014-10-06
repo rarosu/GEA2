@@ -38,7 +38,7 @@ public:
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, glContextFlags);
 		SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 
-		pool = new ThreadPool(8);
+		pool = new ThreadPool(1);
 
 		g_textureLoader = new TextureResourceManager(&filesystem);
 

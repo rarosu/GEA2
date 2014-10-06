@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <string>
+#include <map>
+#include <mutex>
 
 class MemoryAllocator;
 class MemoryAllocatorInterface;
@@ -11,11 +13,18 @@ class MemoryAllocator
 {
 	friend class MemoryAllocatorInterface;
 public:
-	MemoryAllocator(std::ostream& logger = std::cout);
+	~MemoryAllocator();
 
 	MemoryAllocatorInterface GetInterface(const std::string& name);
 private:
-	std::ostream& logger;
+	struct AllocationInfo
+	{
+		size_t size;
+		std::string name;
+	};
+
+	std::mutex mutex;
+	std::map<void*, AllocationInfo> allocations;
 
 	void* Alloc(const MemoryAllocatorInterface& interface, size_t bytecount);
 	void Free(const MemoryAllocatorInterface& interface, void* ptr);
