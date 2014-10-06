@@ -2,6 +2,8 @@
 
 #include <map>
 #include <iostream>
+#include <mutex>
+#include <atomic>
 
 template <typename> class Resource;
 
@@ -22,7 +24,7 @@ struct InternalResource
 
 	T* resource;
 	size_t hash;
-	int refCount;
+	std::atomic<int> refCount;
 };
 
 template <typename T>
@@ -37,6 +39,7 @@ PUBLIC:
 
 PRIVATE:
 	std::map<size_t, InternalResource<T>*> resources;
+	std::mutex mutex;
 };
 
 template <typename T>
@@ -56,7 +59,13 @@ InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
 	internal->hash = hash;
 	internal->refCount = 0;
 
-	std::pair<InternalResource<T>::Iterator, bool> result = resources.insert(std::pair<size_t, InternalResource<T>*>(hash, internal));
+	std::pair<InternalResource<T>::Iterator, bool> result;
+
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		result = resources.insert(std::pair<size_t, InternalResource<T>*>(hash, internal));
+	}
+	
 
 #ifdef _DEBUG
 	if (!result.second)
@@ -73,10 +82,16 @@ InternalResource<T>* ResourceContainer<T>::AddResource(size_t hash, T* resource)
 template <typename T>
 InternalResource<T>* ResourceContainer<T>::GetResource(size_t hash)
 {
-	InternalResource<T>::Iterator itr = resources.find(hash);
-	if (itr == resources.end())
+	InternalResource<T>::Iterator itr;
+
 	{
-		return nullptr;
+		std::lock_guard<std::mutex> lock(mutex);
+		itr = resources.find(hash);
+
+		if (itr == resources.end())
+		{
+			return nullptr;
+		}
 	}
 
 	return itr->second;
@@ -85,8 +100,16 @@ InternalResource<T>* ResourceContainer<T>::GetResource(size_t hash)
 template <typename T>
 void ResourceContainer<T>::RemoveResource(size_t hash)
 {
-	InternalResource<T>::Iterator itr = resources.find(hash);
-	delete itr->second;
+	InternalResource<T>* internal;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
 
-	resources.erase(itr);
+		InternalResource<T>::Iterator itr = resources.find(hash);
+
+		internal = itr->second;
+
+		resources.erase(itr);
+	}
+
+	delete internal;
 }

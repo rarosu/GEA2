@@ -5,44 +5,58 @@ TextureResourceManager::TextureResourceManager(Filesystem* filesystem)
 	this->filesystem = filesystem;
 }
 
-void TextureResourceManager::Destructor(InternalResource<SDL_Surface>* internal)
+TextureResourceManager::~TextureResourceManager()
 {
-	SDL_FreeSurface(internal->resource);
+	
+}
+
+void TextureResourceManager::Destructor(InternalResource<Texture>* internal)
+{
 	textures.RemoveResource(internal->hash);
 }
 
-Resource<SDL_Surface> TextureResourceManager::Load(const std::string& vpath)
+Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 {
 	std::hash<std::string> hasher;
 	size_t hash = hasher(vpath);
 
-	InternalResource<SDL_Surface>* internal = textures.GetResource(hash);
+	InternalResource<Texture>* internal = textures.GetResource(hash);
 	if (internal != nullptr)
-		return Resource<SDL_Surface>(internal, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
+		return Resource<Texture>(internal, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
 
-	File* file = filesystem->GetFile(vpath);
+	char* filedata;
+	size_t filesize;
 
-	if (file == nullptr)
-		return Resource<SDL_Surface>();
-
-	if (!file->Open())
-		return Resource<SDL_Surface>();
-
-	char* filedata = new char[file->GetFileSize()];
-	file->Read(filedata, file->GetFileSize());
-	SDL_RWops* rw = SDL_RWFromConstMem(filedata, file->GetFileSize());
-	SDL_Surface* surface = IMG_LoadPNG_RW(rw);
-	delete[] filedata;
-
-	if (!file->Close())
 	{
-		SDL_FreeSurface(surface);
-		return Resource<SDL_Surface>();
+
+		std::shared_ptr<File> file = filesystem->GetFile(vpath);
+
+		if (file == nullptr)
+			return Resource<Texture>();
+
+		filesize = file->GetFileSize();
+
+		filedata = new char[filesize];
+		file->Read(filedata, filesize);
+	
 	}
 
-	internal = textures.AddResource(hash, surface);
-	if (internal == nullptr)
-		return Resource<SDL_Surface>();
+	
+	SDL_Surface* surface;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		SDL_RWops* rw = SDL_RWFromConstMem(filedata, filesize);
+		surface = IMG_LoadPNG_RW(rw);
+	}
+	
+	delete[] filedata;
 
-	return Resource<SDL_Surface>(internal, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
+	Texture* texture = new Texture;
+	texture->surface = surface;
+
+	internal = textures.AddResource(hash, texture);
+	if (internal == nullptr)
+		return Resource<Texture>();
+
+	return Resource<Texture>(internal, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
 }
