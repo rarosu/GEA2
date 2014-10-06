@@ -1,0 +1,2 @@
+VERTEX CubeVert
+FRAGMENT CubeFrag
