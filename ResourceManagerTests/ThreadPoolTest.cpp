@@ -10,11 +10,12 @@
 #include <ThreadPool.h>
 #include <Filesystem.h>
 #include <TextureResourceManager.h>
+#include <MemoryAllocator.h>
 #include <Timer.h>
 #include <vector>
 
 SDL_Window* g_window;
-TextureResourceManager* g_textureLoader;
+//TextureResourceManager* g_textureLoader;
 
 class ThreadPoolTest : public ::testing::Test
 {
@@ -40,7 +41,7 @@ public:
 
 		pool = new ThreadPool(1);
 
-		g_textureLoader = new TextureResourceManager(&filesystem);
+		textureLoader = new TextureResourceManager(&filesystem, &allocator);
 
 		// Initiate GLEW. 
 		glewExperimental = GL_TRUE;
@@ -53,7 +54,7 @@ public:
 
 	void TearDown()
 	{
-		delete g_textureLoader;
+		delete textureLoader;
 		delete pool;
 
 		SDL_DestroyWindow(g_window);
@@ -62,6 +63,8 @@ public:
 	}
 
 protected:
+	TextureResourceManager* textureLoader;
+	MemoryAllocator allocator;
 	Filesystem filesystem;
 	ThreadPool* pool;
 
@@ -71,9 +74,9 @@ std::mutex g_mutex;
 
 struct LoadTextureTask
 {
-	Resource<Texture> operator()(const std::string& path)
+	Resource<Texture> operator()(TextureResourceManager* textureLoader, const std::string& path)
 	{
-		Resource<Texture> texture = g_textureLoader->Load(path);
+		Resource<Texture> texture = textureLoader->Load(path);
 
 		g_mutex.lock();
 		glGenTextures(1, &texture->texture);
@@ -92,8 +95,8 @@ TEST_F(ThreadPoolTest, SimpleThreadPoolTest)
 
 		for (int i = 0; i < 2; i++)
 		{
-			futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture.png"));
-			futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture2.png"));
+			futures.push_back(pool->AddTask<LoadTextureTask>(textureLoader, "TestTexture.png"));
+			futures.push_back(pool->AddTask<LoadTextureTask>(textureLoader, "TestTexture2.png"));
 		}
 
 		while (!futures.empty())

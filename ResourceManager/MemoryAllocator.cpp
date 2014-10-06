@@ -3,6 +3,7 @@
 MemoryAllocator::~MemoryAllocator()
 {
 	std::cout << "-- Unallocated Memory --" << std::endl;
+
 	for (auto it : allocations)
 	{
 		std::cout << "[" << it.second.name << "] " << it.first << " with size " << it.second.size << std::endl;
@@ -14,19 +15,19 @@ MemoryAllocatorInterface MemoryAllocator::GetInterface(const std::string& name)
 	return MemoryAllocatorInterface(name, this);
 }
 
-void* MemoryAllocator::Alloc(const MemoryAllocatorInterface& interface, size_t bytecount)
+void* MemoryAllocator::Alloc(const MemoryAllocatorInterface& allocatorInterface, size_t bytecount)
 {
 	void* ptr = new char[bytecount];
 
 	{
 		std::lock_guard<std::mutex> lock(mutex);
-		allocations[ptr] = { bytecount, interface.GetName() };
+		allocations[ptr] = { bytecount, allocatorInterface.GetName() };
 	}
 	
 	return ptr;
 }
 
-void MemoryAllocator::Free(const MemoryAllocatorInterface& interface, void* ptr)
+void MemoryAllocator::Free(const MemoryAllocatorInterface& allocatorInterface, void* ptr)
 {
 	{
 		std::lock_guard<std::mutex> lock(mutex);

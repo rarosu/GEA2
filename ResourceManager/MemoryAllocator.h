@@ -8,7 +8,6 @@
 class MemoryAllocator;
 class MemoryAllocatorInterface;
 
-
 class MemoryAllocator
 {
 	friend class MemoryAllocatorInterface;
@@ -26,8 +25,8 @@ private:
 	std::mutex mutex;
 	std::map<void*, AllocationInfo> allocations;
 
-	void* Alloc(const MemoryAllocatorInterface& interface, size_t bytecount);
-	void Free(const MemoryAllocatorInterface& interface, void* ptr);
+	void* Alloc(const MemoryAllocatorInterface& allocatorInterface, size_t bytecount);
+	void Free(const MemoryAllocatorInterface& allocatorInterface, void* ptr);
 };
 
 

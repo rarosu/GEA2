@@ -8,7 +8,7 @@
 class TextureResourceManagerTest : public ::testing::Test
 {
 public:
-	TextureResourceManagerTest() : rm(&filesystem) 
+	TextureResourceManagerTest() : rm(&filesystem, &allocator)
 	{
 		SDL_Init(0);
 		IMG_Init(IMG_INIT_PNG);
@@ -20,6 +20,7 @@ public:
 		SDL_Quit();
 	}
 protected:
+	MemoryAllocator allocator;
 	Filesystem filesystem;
 	TextureResourceManager rm;
 };
