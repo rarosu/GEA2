@@ -1,6 +1,7 @@
 #include "ChunkManager.h"
 #include "../../RLE/rle.c"
 #include <fstream>
+#include <iostream>
 
 ChunkManager::ChunkManager()
 	: worldMatBuf(GL_UNIFORM_BUFFER)
@@ -31,9 +32,13 @@ ChunkManager::ChunkManager()
 				if(z < SCZ - 1)
 					chunkList[x][y][z]->back = chunkList[x][y][z + 1];
 			}
+		//	GenerateTerrain();
+			//Export("world.world");
+			//Import("world.world");
 
-	GenerateTerrain();
-	Export();
+			//TESINGN
+			xx = yy = zz = ii =0;
+			
 
 	nrOfChunks = SCX*SCY*SCZ;
 	nrOfBlocks = nrOfChunks*CX*CY*CZ;
@@ -50,6 +55,21 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Draw()
 {
+	ii++;
+	if (xx < SCX && yy < SCY && zz < SCZ && ii % 2 == 0)
+	{
+		ImportChunkAt(xx++, yy , zz);
+	}
+	else if (xx == SCX)
+	{
+		xx = 0;
+		zz++;
+	}
+	if (zz == SCZ)
+	{
+		zz = 0;
+		yy++;
+	}
 	for(int x = 0; x < SCX; x++)
 		for(int y = 0; y < SCY; y++)
 			for(int z = 0; z < SCZ; z++)
@@ -60,6 +80,8 @@ void ChunkManager::Draw()
 
 					chunkList[x][y][z]->Draw();
 				}
+
+				
 }
 
 uint8_t ChunkManager::Get(int x, int y, int z)
@@ -122,7 +144,7 @@ void ChunkManager::GenerateTerrain()
 	}
 }
 
-void ChunkManager::Export()
+void ChunkManager::Export(const char* fileName)
 {
 	struct header_element{
 		int adress;
@@ -133,7 +155,7 @@ void ChunkManager::Export()
 	header_element* header = new header_element[SCX * SCY * SCZ];
 	memset(header, 0, header_size - sizeof(int));
 	std::ofstream s;
-	s.open("world.world", std::ios_base::binary);
+	s.open(fileName, std::ios_base::binary);
 	
 	s.write((char*)&header_size, sizeof(int));
 	s.write((char*)header, header_size - sizeof(int));
@@ -166,4 +188,78 @@ void ChunkManager::Export()
 	s.flush();
 	s.close();
 	delete[] header;
+}
+
+void ChunkManager::Import(const char* fileName)
+{
+	struct header_element
+	{
+		int address;
+		int size;
+	};
+
+	header_element* header = new header_element[SCX * SCY * SCZ];
+
+	std::ifstream s;
+	s.open(fileName, std::ios_base::binary);
+	if (s.is_open())
+	{
+		int header_size;
+		s.read((char*)&header_size, sizeof(int));
+		s.read((char*)header, header_size - sizeof(int));
+
+
+		int i = 0;
+		for (int x = 0; x < SCX; ++x)
+		{
+			for (int y = 0; y < SCY; ++y)
+			{
+				for (int z = 0; z < SCZ; ++z)
+				{
+					uint8_t* compressed = new uint8_t[header[i].size];
+					s.seekg(header[i].address);
+					s.read((char*)compressed, header[i].size);
+					RLE_Uncompress(compressed, (unsigned char*)chunkList[x][y][z]->blockList, header[i].size);
+
+					++i;
+
+					delete[] compressed;
+				}
+			}
+		}
+		s.close();
+	}
+	else
+		std::cout << "INTE OPPEN" << std::endl;
+}
+
+void ChunkManager::ImportChunkAt(int x, int y, int z)
+{
+	struct header_element
+	{
+		int address;
+		int size;
+	};
+
+	header_element* header = new header_element[SCX * SCY * SCZ];
+
+	std::ifstream s;
+	s.open("world.world", std::ios_base::binary);
+	if (s.is_open())
+	{
+		int header_size;
+		s.read((char*)&header_size, sizeof(int));
+		s.read((char*)header, header_size - sizeof(int));
+		int i = SCZ * SCY * x + SCZ * y + z;
+		uint8_t* compressed = new uint8_t[header[i].size];
+		s.seekg(header[i].address);
+		s.read((char*)compressed, header[i].size);
+		RLE_Uncompress(compressed, (unsigned char*)chunkList[x][y][z]->blockList, header[i].size);
+		chunkList[x][y][z]->changed = true;
+		delete[] compressed;
+		
+		s.close();
+	}
+	else
+		std::cout << "INTE OPPEN" << std::endl;
 }

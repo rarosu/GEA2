@@ -38,6 +38,9 @@ int main(int argc, char* argv[])
 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
+
 	glewExperimental = GL_TRUE; 
 	context = SDL_GL_CreateContext(window);
 
