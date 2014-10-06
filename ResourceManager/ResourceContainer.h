@@ -3,6 +3,7 @@
 #include <map>
 #include <iostream>
 #include <mutex>
+#include <atomic>
 
 template <typename> class Resource;
 
@@ -23,7 +24,7 @@ struct InternalResource
 
 	T* resource;
 	size_t hash;
-	int refCount;
+	std::atomic<int> refCount;
 };
 
 template <typename T>
@@ -86,11 +87,11 @@ InternalResource<T>* ResourceContainer<T>::GetResource(size_t hash)
 	{
 		std::lock_guard<std::mutex> lock(mutex);
 		itr = resources.find(hash);
-	}
-	
-	if (itr == resources.end())
-	{
-		return nullptr;
+
+		if (itr == resources.end())
+		{
+			return nullptr;
+		}
 	}
 
 	return itr->second;

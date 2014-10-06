@@ -41,8 +41,14 @@ Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 	
 	}
 
-	SDL_RWops* rw = SDL_RWFromConstMem(filedata, filesize);
-	SDL_Surface* surface = IMG_LoadPNG_RW(rw);
+	
+	SDL_Surface* surface;
+	{
+		std::lock_guard<std::mutex> lock(mutex);
+		SDL_RWops* rw = SDL_RWFromConstMem(filedata, filesize);
+		surface = IMG_LoadPNG_RW(rw);
+	}
+	
 	delete[] filedata;
 
 	Texture* texture = new Texture;
