@@ -7,9 +7,9 @@
 #include <ChunkResourceManager.h>
 #include <map>
 
-#define SCX 32
+#define SCX 256
 #define SCY 2
-#define SCZ 32
+#define SCZ 256
 
 class ChunkManager
 {

@@ -33,3 +33,9 @@ solution "GEA2"
 		files { "ResourceManagerTests/**.h", "ResourceManagerTests/**.cpp" }
 		links { "gtest/lib/gtest", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image", "opengl32", "glew/lib/glew32" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
+	project "WorldGenerator"
+		kind "ConsoleApp"
+		language "C++"
+		files { "WorldGenerator/**.h", "WorldGenerator/**.cpp" }
+		links {  }
+		includedirs {"glm/glm/"}

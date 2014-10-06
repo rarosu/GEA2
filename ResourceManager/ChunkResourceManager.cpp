@@ -21,7 +21,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 {
 	std::hash<std::string> hasher;
 	std::stringstream ss;
-	std::string filename("world.world");
+	std::string filename("testtest.world");
 	ss << filename << ',' << x << ',' << y << ',' << z;
 	auto hash = hasher(ss.str());
 
@@ -31,7 +31,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 	{
 
-		std::shared_ptr<File> file = filesystem->GetFile("world.world");
+		std::shared_ptr<File> file = filesystem->GetFile("testtest.world");
 
 		if (file == nullptr)
 			return Resource<Chunk>();

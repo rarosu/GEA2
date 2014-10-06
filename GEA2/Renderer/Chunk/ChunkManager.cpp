@@ -5,12 +5,7 @@
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
 : worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera)
 {
-
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
-	
-	//GenerateTerrain();
-	//Export("world.world");
-	//Import("world.world");
 }
 
 
@@ -101,6 +96,7 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	if (existMap.find(pos) == existMap.end())
 	{
 		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
+		
 		drawList.push_back(chunk);
 		existMap[pos] = chunk;
 	}
