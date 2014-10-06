@@ -5,9 +5,9 @@
 #include <cstdint>
 
 
-#define SCX 1
-#define SCY 1
-#define SCZ 1
+#define SCX 32
+#define SCY 2
+#define SCZ 32
 
 class ChunkManager
 {
@@ -23,7 +23,9 @@ public:
 
 	void GenerateTerrain();
 
-	void Export();
+	void Export(const char* fileName);
+	void Import(const char* fileName);
+	void ImportChunkAt(int x, int y, int z);
 private:
 	Chunk* chunkList[SCX][SCY][SCZ];
 
@@ -31,4 +33,7 @@ private:
 	int nrOfBlocks;
 
 	Buffer worldMatBuf;
+
+	//TESTING
+	int xx, yy, zz, ii;
 };
