@@ -10,6 +10,8 @@ void CloseFile(File* file)
 
 std::shared_ptr<File> Filesystem::GetFile(const std::string& vpath)
 {
+	//std::lock_guard<std::mutex> lock(mutex);
+
 	auto it = files.find(vpath);
 
 	if (it == files.end())
