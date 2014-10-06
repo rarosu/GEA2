@@ -17,10 +17,10 @@ void TextureResourceManager::Destructor(InternalResource<Texture>* internal)
 
 Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 {
+	std::lock_guard<std::mutex> lock(mutex);
+
 	std::hash<std::string> hasher;
 	size_t hash = hasher(vpath);
-
-	std::lock_guard<std::mutex> lock(mutex);
 
 	InternalResource<Texture>* internal = textures.GetResource(hash);
 	if (internal != nullptr)

@@ -10,6 +10,8 @@
 #include <ThreadPool.h>
 #include <Filesystem.h>
 #include <TextureResourceManager.h>
+#include <Timer.h>
+#include <vector>
 
 SDL_Window* g_window;
 TextureResourceManager* g_textureLoader;
@@ -65,24 +67,6 @@ protected:
 
 };
 
-
-struct SimpleTaskResult
-{
-	int value;
-	GLuint buffer;
-};
-
-struct SimpleTask
-{
-	SimpleTaskResult operator()(int a, int b)
-	{
-		SimpleTaskResult result = { 0, 0 };
-		result.value = a + b;
-		glGenBuffers(1, &result.buffer);
-		return result;
-	}
-};
-
 std::mutex g_mutex;
 
 struct LoadTextureTask
@@ -101,41 +85,35 @@ struct LoadTextureTask
 
 TEST_F(ThreadPoolTest, SimpleThreadPoolTest)
 {
-	/*
-	{
-		GLuint buffer;
-		glGenBuffers(1, &buffer);
-
-		std::future<SimpleTaskResult> future = pool->AddTask<SimpleTask>(15, 15);
-
-		future.wait();
-
-		SimpleTaskResult result = future.get();
-
-		ASSERT_EQ(result.value, 30);
-		ASSERT_EQ(result.buffer, 2);
-	}*/
-
 	{
 		filesystem.AddArchive<ZipArchive>("../assets/Assets.zip");
 
-		//filesystem.AddArchive<ZipArchive>("../assets/TestTextures.zip");
-		//filesystem.AddArchive<ZipArchive>("../assets/TestTextures2.zip");
+		std::vector<std::future<Resource<Texture>>> futures;
 
-		std::future<Resource<Texture>> future = pool->AddTask<LoadTextureTask>("TestTexture.png");
-		std::future<Resource<Texture>> future2 = pool->AddTask<LoadTextureTask>("TestTexture2.png");
+		futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture.png"));
+		futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture2.png"));
 
-		Resource<Texture> r1 = future.get();
-		ASSERT_NE(r1, nullptr);
-		ASSERT_EQ(r1->surface->w, 1406);
-		ASSERT_EQ(r1->surface->h, 681);
+		while (!futures.empty())
+		{
+			for (auto itr = futures.begin(); itr != futures.end();)
+			{
+				if ((*itr)._Is_ready())
+				{
+					Resource<Texture> r = (*itr).get();
 
-		Resource<Texture> r2 = future2.get();
-		ASSERT_NE(r2, nullptr);
-		ASSERT_EQ(r2->surface->w, 1406);
-		ASSERT_EQ(r2->surface->h, 681);
+					ASSERT_NE(r, nullptr);
+					ASSERT_EQ(r->surface->w, 1406);
+					ASSERT_EQ(r->surface->h, 681);
+
+					itr = futures.erase(itr);
+				}
+				else
+				{
+					itr++;
+				}
+			}
+		}
 	}
-
 }
 
 

@@ -11,7 +11,6 @@ Worker::Worker(size_t _id, ThreadPool& _pool, SDL_GLContext _context)
 void Worker::operator()()
 {
 	SDL_GL_MakeCurrent(g_window, context);
-
 	
 	while(true)
 	{
@@ -28,7 +27,7 @@ void Worker::operator()()
 			if(pool.stop)
 				return;
 
-			task = std::move(pool.tasks.back());
+			task = std::move(pool.tasks.front());
 			pool.tasks.pop();
 		}
 		
