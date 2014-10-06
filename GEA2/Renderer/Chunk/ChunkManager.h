@@ -23,6 +23,7 @@ public:
 
 	void GenerateTerrain();
 
+	void Export();
 private:
 	Chunk* chunkList[SCX][SCY][SCZ];
 
