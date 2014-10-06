@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
-Renderer::Renderer(Camera* camera, unsigned width, unsigned height)
-	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER)
+Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height)
+: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager)
 {
 	//Create chunk rendering shader program
 	shaderProgram.CreateProgram("../Assets/Shaders/Cube");
@@ -51,7 +51,7 @@ void Renderer::Draw()
 	texture.Bind(0);
 	shaderProgram.Use();
 	//Render all chunks
-	chunkyChunkMan.Draw();
+	chunkManager->Draw();
 	texture.Unbind(0);
 
 	//TODO: Add SSAO to output
@@ -67,28 +67,7 @@ void Renderer::Draw()
 	gbuffer.UnbindTextures();
 }
 
-void Renderer::DestroyBlock()
-{
-	//Ray march 10 half blocks forward from camera position, check for non air blocks and destroy
-	glm::vec3 pos = camera->GetPosition();
-	glm::vec3 dir = glm::normalize(camera->GetFacing());
 
-	for (int i = 0; i < 10; ++i)
-	{
-		if (chunkyChunkMan.Get((int)pos.x, (int)pos.y, (int)pos.z) != 0)
-		{
-			chunkyChunkMan.Set((int)pos.x, (int)pos.y, (int)pos.z, 0);
-			break;
-		}
-		pos += dir*0.5f;
-	}
-}
-
-ChunkManager* Renderer::GetChunkManager()
-{
-	//Temp, chunkmanager should maybe not live in the renderer?
-	return &chunkyChunkMan;
-}
 
 void Renderer::Resize(unsigned width, unsigned height)
 {

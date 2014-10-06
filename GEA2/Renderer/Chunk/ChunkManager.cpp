@@ -1,87 +1,50 @@
 #include "ChunkManager.h"
-#include "../../RLE/rle.c"
 #include <fstream>
 #include <iostream>
 
-ChunkManager::ChunkManager()
-	: worldMatBuf(GL_UNIFORM_BUFFER)
+ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
+: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera)
 {
-	memset(chunkList, 0, sizeof(chunkList));
 
-	for(int x = 0; x < SCX; x++)
-		for(int y = 0; y < SCY; y++)
-			for(int z = 0; z < SCZ; z++)
-				chunkList[x][y][z] = new Chunk(glm::vec3(x * CX, y * CY, z * CZ));
-
-	worldMatBuf.BufferData(1, sizeof(glm::mat4), &chunkList[0][0][0]->worldMatrix, GL_DYNAMIC_DRAW);
-
-	for(int x = 0; x < SCX; x++)
-		for(int y = 0; y < SCY; y++)
-			for(int z = 0; z < SCZ; z++) 
-			{
-				if(x > 0)
-					chunkList[x][y][z]->left = chunkList[x - 1][y][z];
-				if(x < SCX - 1)
-					chunkList[x][y][z]->right = chunkList[x + 1][y][z];
-				if(y > 0)
-					chunkList[x][y][z]->below = chunkList[x][y - 1][z];
-				if(y < SCY - 1)
-					chunkList[x][y][z]->above = chunkList[x][y + 1][z];
-				if(z > 0)
-					chunkList[x][y][z]->front = chunkList[x][y][z - 1];
-				if(z < SCZ - 1)
-					chunkList[x][y][z]->back = chunkList[x][y][z + 1];
-			}
-		//	GenerateTerrain();
-			//Export("world.world");
-			//Import("world.world");
-
-			//TESINGN
-			xx = yy = zz = ii =0;
-			
-
-	nrOfChunks = SCX*SCY*SCZ;
-	nrOfBlocks = nrOfChunks*CX*CY*CZ;
+	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
+	
+	//GenerateTerrain();
+	//Export("world.world");
+	//Import("world.world");
 }
 
 
 ChunkManager::~ChunkManager()
 {
-	for(int x = 0; x < SCX; x++)
-		for (int y = 0; y < SCY; y++)
-			for (int z = 0; z < SCZ; z++)
-				delete chunkList[x][y][z];
+}
+
+void ChunkManager::Update(float dt)
+{
+	for (int x = 0; x < SCX; ++x)
+		for (int y = 0; y < SCY; ++y)	
+			for (int z = 0; z < SCZ; ++z)
+			{
+				float dist = glm::distance(glm::vec3(x*CX, y*CY, z*CZ), camera->GetPosition());
+				if (dist < 16 * 20)
+				{
+					AddChunk(x, y, z);
+				}
+				else
+				{
+					RemoveChunk(x, y, z);
+				}
+			}	
 }
 
 void ChunkManager::Draw()
 {
-	ii++;
-	if (xx < SCX && yy < SCY && zz < SCZ && ii % 2 == 0)
+	for (auto chunk : drawList)
 	{
-		ImportChunkAt(xx++, yy , zz);
-	}
-	else if (xx == SCX)
-	{
-		xx = 0;
-		zz++;
-	}
-	if (zz == SCZ)
-	{
-		zz = 0;
-		yy++;
-	}
-	for(int x = 0; x < SCX; x++)
-		for(int y = 0; y < SCY; y++)
-			for(int z = 0; z < SCZ; z++)
-				if (chunkList[x][y][z])
-				{
-					worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunkList[x][y][z]->worldMatrix);
-					glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
+		worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunk->worldMatrix);
+		glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
 
-					chunkList[x][y][z]->Draw();
-				}
-
-				
+		chunk->Draw();
+	}			
 }
 
 uint8_t ChunkManager::Get(int x, int y, int z)
@@ -90,14 +53,18 @@ uint8_t ChunkManager::Get(int x, int y, int z)
 	int cy = y / CY;
 	int cz = z / CZ;
 
-	x %= CX;
-	y %= CY;
-	z %= CZ;
+	int pos = SCZ * SCY * cx + SCZ * cy + cz;
+	auto itmap = existMap.find(pos);
+	if (itmap != existMap.end())
+	{
+		x %= CX;
+		y %= CY;
+		z %= CZ;
 
-	if(!chunkList[cx][cy][cz])
-		return 0;
-	else
-		return chunkList[cx][cy][cz]->Get(x, y, z);
+		return itmap->second->Get(x, y, z);
+	}
+
+	return 0;
 }
 
 void ChunkManager::Set( int x, int y, int z, uint8_t type )
@@ -106,18 +73,16 @@ void ChunkManager::Set( int x, int y, int z, uint8_t type )
 	int cy = y / CY;
 	int cz = z / CZ;
 
-	x %= CX;
-	y %= CY;
-	z %= CZ;
-	  
-	if(!chunkList[cx][cy][cz])
+	int pos = SCZ * SCY * cx + SCZ * cy + cz;
+	auto itmap = existMap.find(pos);
+	if (itmap != existMap.end())
 	{
-		nrOfChunks++;
-		chunkList[cx][cy][cz] = new Chunk(glm::vec3(cx * CX, cy * CY, cz * CZ));
-	}
+		x %= CX;
+		y %= CY;
+		z %= CZ;
 
-	nrOfBlocks++;
-	chunkList[cx][cy][cz]->Set(x, y, z, type);
+		itmap->second->Set(x, y, z, type);
+	}
 }
 
 int& ChunkManager::GetNrOfBlocks()
@@ -130,136 +95,42 @@ int ChunkManager::GetNrOfChunks()
 	return nrOfChunks;
 }
 
-void ChunkManager::GenerateTerrain()
+void ChunkManager::AddChunk(int x, int y, int z)
 {
-	for (int x = 0; x < SCX; x++)
+	int pos = SCZ * SCY * x + SCZ * y + z;
+	if (existMap.find(pos) == existMap.end())
 	{
-		for(int y = 0; y < SCY; y++)
-		{
-			for (int z = 0; z < SCZ; z++)
-			{
-				chunkList[x][y][z]->Noise(1, x, y, z);
-			}
-		}
+		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
+		drawList.push_back(chunk);
+		existMap[pos] = chunk;
 	}
 }
 
-void ChunkManager::Export(const char* fileName)
+void ChunkManager::RemoveChunk(int x, int y, int z)
 {
-	struct header_element{
-		int adress;
-		int size;
-	};
-
-	int header_size = SCX * SCY * SCZ * sizeof(header_element) + sizeof(int);
-	header_element* header = new header_element[SCX * SCY * SCZ];
-	memset(header, 0, header_size - sizeof(int));
-	std::ofstream s;
-	s.open(fileName, std::ios_base::binary);
-	
-	s.write((char*)&header_size, sizeof(int));
-	s.write((char*)header, header_size - sizeof(int));
-
-	int i = 0;
-	for (int x = 0; x < SCX; ++x)
+	int pos = SCZ * SCY * x + SCZ * y + z;
+	auto itmap = existMap.find(pos);
+	if (itmap != existMap.end())
 	{
-		for (int y = 0; y < SCY; ++y)
-		{
-			for (int z = 0; z < SCZ; ++z)
-			{
-				Chunk* current = chunkList[x][y][z];
-				unsigned char* compressed = new unsigned char[CX * CY * CZ];
-				header[i].size = RLE_Compress((unsigned char*)current->blockList, compressed, CX * CY * CZ);
-				s.write((char*)compressed, header[i].size);
-
-				int address = (i != 0) ? header[i - 1].adress + header[i - 1].size : header_size;
-				header[i].adress = address;
-				
-				++i;
-
-				delete[] compressed;
-			}
-		}
+		auto itdraw = std::find(drawList.begin(), drawList.end(), itmap->second);
+		drawList.erase(itdraw);
+		existMap.erase(pos);
 	}
-
-	s.seekp(std::ios_base::beg + sizeof(int));
-	s.write((char*)header, header_size - sizeof(int));
-
-	s.flush();
-	s.close();
-	delete[] header;
 }
 
-void ChunkManager::Import(const char* fileName)
+void ChunkManager::DestroyBlock()
 {
-	struct header_element
+	//Ray march 10 half blocks forward from camera position, check for non air blocks and destroy
+	glm::vec3 pos = camera->GetPosition();
+	glm::vec3 dir = glm::normalize(camera->GetFacing());
+
+	for (int i = 0; i < 10; ++i)
 	{
-		int address;
-		int size;
-	};
-
-	header_element* header = new header_element[SCX * SCY * SCZ];
-
-	std::ifstream s;
-	s.open(fileName, std::ios_base::binary);
-	if (s.is_open())
-	{
-		int header_size;
-		s.read((char*)&header_size, sizeof(int));
-		s.read((char*)header, header_size - sizeof(int));
-
-
-		int i = 0;
-		for (int x = 0; x < SCX; ++x)
+		if (Get((int)pos.x, (int)pos.y, (int)pos.z) != 0)
 		{
-			for (int y = 0; y < SCY; ++y)
-			{
-				for (int z = 0; z < SCZ; ++z)
-				{
-					uint8_t* compressed = new uint8_t[header[i].size];
-					s.seekg(header[i].address);
-					s.read((char*)compressed, header[i].size);
-					RLE_Uncompress(compressed, (unsigned char*)chunkList[x][y][z]->blockList, header[i].size);
-
-					++i;
-
-					delete[] compressed;
-				}
-			}
+			Set((int)pos.x, (int)pos.y, (int)pos.z, 0);
+			break;
 		}
-		s.close();
+		pos += dir*0.5f;
 	}
-	else
-		std::cout << "INTE OPPEN" << std::endl;
-}
-
-void ChunkManager::ImportChunkAt(int x, int y, int z)
-{
-	struct header_element
-	{
-		int address;
-		int size;
-	};
-
-	header_element* header = new header_element[SCX * SCY * SCZ];
-
-	std::ifstream s;
-	s.open("world.world", std::ios_base::binary);
-	if (s.is_open())
-	{
-		int header_size;
-		s.read((char*)&header_size, sizeof(int));
-		s.read((char*)header, header_size - sizeof(int));
-		int i = SCZ * SCY * x + SCZ * y + z;
-		uint8_t* compressed = new uint8_t[header[i].size];
-		s.seekg(header[i].address);
-		s.read((char*)compressed, header[i].size);
-		RLE_Uncompress(compressed, (unsigned char*)chunkList[x][y][z]->blockList, header[i].size);
-		chunkList[x][y][z]->changed = true;
-		delete[] compressed;
-		
-		s.close();
-	}
-	else
-		std::cout << "INTE OPPEN" << std::endl;
 }
