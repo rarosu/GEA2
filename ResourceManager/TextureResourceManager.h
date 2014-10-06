@@ -6,6 +6,7 @@
 #include "Resource.h"
 #include "ResourceContainer.h"
 #include "Filesystem.h"
+#include "MemoryAllocator.h"
 
 #include <glew.h>
 #include <mutex>
@@ -24,7 +25,7 @@ struct Texture
 class TextureResourceManager
 {
 PUBLIC:
-	TextureResourceManager(Filesystem* filesystem);
+	TextureResourceManager(Filesystem* filesystem, MemoryAllocator* allocator);
 	~TextureResourceManager();
 
 	Resource<Texture> Load(const std::string& vpath);
@@ -32,5 +33,6 @@ PUBLIC:
 PRIVATE:
 	ResourceContainer<Texture> textures;
 	Filesystem* filesystem;
+	MemoryAllocatorInterface allocator;
 	std::mutex mutex;
 };

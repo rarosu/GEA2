@@ -1,6 +1,7 @@
 #include "TextureResourceManager.h"
 
-TextureResourceManager::TextureResourceManager(Filesystem* filesystem)
+TextureResourceManager::TextureResourceManager(Filesystem* filesystem, MemoryAllocator* _allocator)
+	: allocator(_allocator->GetInterface("TextureResourceManager"))
 {
 	this->filesystem = filesystem;
 }
@@ -12,6 +13,7 @@ TextureResourceManager::~TextureResourceManager()
 
 void TextureResourceManager::Destructor(InternalResource<Texture>* internal)
 {
+	allocator.Free(internal->resource);
 	textures.RemoveResource(internal->hash);
 }
 
@@ -36,7 +38,7 @@ Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 
 		filesize = file->GetFileSize();
 
-		filedata = new char[filesize];
+		filedata = (char*) allocator.Alloc(filesize);
 		file->Read(filedata, filesize);
 	
 	}
@@ -49,9 +51,10 @@ Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 		surface = IMG_LoadPNG_RW(rw);
 	}
 	
-	delete[] filedata;
+	allocator.Free(filedata);
 
-	Texture* texture = new Texture;
+	//Texture* texture = new Texture;
+	Texture* texture = (Texture*) allocator.Alloc(sizeof(Texture));
 	texture->surface = surface;
 
 	internal = textures.AddResource(hash, texture);
