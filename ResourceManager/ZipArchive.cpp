@@ -114,7 +114,6 @@ bool ZipArchiveFile::Close()
 		std::cerr << "ZipArchive: Failed to close current file" << std::endl;
 		return false;
 	}
-
 	return true;
 }
 

@@ -29,18 +29,18 @@ TEST_F(TextureResourceManagerTest, TextureLoad)
 	filesystem.AddArchive<ZipArchive>("../assets/TestTextures.zip");
 
 	{
-		Resource<SDL_Surface> r1 = rm.Load("TestTexture.png");
+		Resource<Texture> r1 = rm.Load("TestTexture.png");
 		ASSERT_NE(r1, nullptr);
 
-		ASSERT_EQ(r1->w, 1406);
-		ASSERT_EQ(r1->h, 681);
+		ASSERT_EQ(r1->surface->w, 1406);
+		ASSERT_EQ(r1->surface->h, 681);
 
-		Resource<SDL_Surface> r3 = rm.Load("TestTexture.png");
+		Resource<Texture> r3 = rm.Load("TestTexture.png");
 		ASSERT_EQ(r1, r3);
 	}
 
 	ASSERT_EQ(rm.textures.resources.size(), 0);
 
-	Resource<SDL_Surface> r2 = rm.Load("NotExisting.png");
+	Resource<Texture> r2 = rm.Load("NotExisting.png");
 	ASSERT_EQ(r2, nullptr);
 }
