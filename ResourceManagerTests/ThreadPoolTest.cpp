@@ -90,8 +90,11 @@ TEST_F(ThreadPoolTest, SimpleThreadPoolTest)
 
 		std::vector<std::future<Resource<Texture>>> futures;
 
-		futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture.png"));
-		futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture2.png"));
+		for (int i = 0; i < 10; i++)
+		{
+			futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture.png"));
+			futures.push_back(pool->AddTask<LoadTextureTask>("TestTexture2.png"));
+		}
 
 		while (!futures.empty())
 		{
