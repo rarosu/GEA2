@@ -31,5 +31,5 @@ solution "GEA2"
 		kind "ConsoleApp"
 		language "C++"
 		files { "ResourceManagerTests/**.h", "ResourceManagerTests/**.cpp" }
-		links { "gtest/lib/gtest", "gtest/lib/gtest_main", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image", "opengl32", "glew/lib/glew32" }
+		links { "gtest/lib/gtest", "ResourceManager", "zlibwapi/lib/zlibwapi", "SDL/lib/x86/SDL2", "SDL/lib/x86/SDL2_image", "opengl32", "glew/lib/glew32" }
 		includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
