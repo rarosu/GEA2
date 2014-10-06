@@ -67,7 +67,7 @@ std::vector<std::pair<std::string, File*>> ZipArchive::GetFiles()
 			continue;
 		}
 
-		File* file = new ZipArchiveFile(archive, fileInfo, position);
+		File* file = new ZipArchiveFile(archive, fileInfo, position, &mutex);
 		result.push_back(std::pair<std::string, File*>(filename, file));
 
 		// Move to the next file in the archive.
@@ -79,11 +79,12 @@ std::vector<std::pair<std::string, File*>> ZipArchive::GetFiles()
 
 
 
-ZipArchiveFile::ZipArchiveFile(unzFile archive, const unz_file_info& info, const unz_file_pos& position)
+ZipArchiveFile::ZipArchiveFile(unzFile archive, const unz_file_info& info, const unz_file_pos& position, std::mutex* mutex)
 {
 	this->archive = archive;
 	this->info = info;
 	this->position = position;
+	this->mutex = mutex;
 }
 
 ZipArchiveFile::~ZipArchiveFile()
@@ -92,15 +93,19 @@ ZipArchiveFile::~ZipArchiveFile()
 
 bool ZipArchiveFile::Open()
 {
+	this->mutex->lock();
+
  	if (unzGoToFilePos(archive, &position) != UNZ_OK)
 	{
 		std::cerr << "ZipArchive: Failed to go to file position" << std::endl;
+		this->mutex->unlock();
 		return false;
 	}
 
 	if (unzOpenCurrentFile(archive) != UNZ_OK)
 	{
 		std::cerr << "ZipArchive: Failed to open current file" << std::endl;
+		this->mutex->unlock();
 		return false;
 	}
 
@@ -112,8 +117,10 @@ bool ZipArchiveFile::Close()
 	if (unzCloseCurrentFile(archive) != UNZ_OK)
 	{
 		std::cerr << "ZipArchive: Failed to close current file" << std::endl;
+		this->mutex->unlock();
 		return false;
 	}
+	this->mutex->unlock();
 	return true;
 }
 

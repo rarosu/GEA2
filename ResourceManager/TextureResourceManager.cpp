@@ -17,8 +17,6 @@ void TextureResourceManager::Destructor(InternalResource<Texture>* internal)
 
 Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 {
-	std::lock_guard<std::mutex> lock(mutex);
-
 	std::hash<std::string> hasher;
 	size_t hash = hasher(vpath);
 
@@ -26,29 +24,30 @@ Resource<Texture> TextureResourceManager::Load(const std::string& vpath)
 	if (internal != nullptr)
 		return Resource<Texture>(internal, std::bind(&TextureResourceManager::Destructor, this, std::placeholders::_1));
 
-	File* file = filesystem->GetFile(vpath);
+	char* filedata;
+	size_t filesize;
 
-	if (file == nullptr)
-		return Resource<Texture>();
+	{
 
-	if (!file->Open())
-		return Resource<Texture>();
+		std::shared_ptr<File> file = filesystem->GetFile(vpath);
 
-	char* filedata = new char[file->GetFileSize()];
-	file->Read(filedata, file->GetFileSize());
-	SDL_RWops* rw = SDL_RWFromConstMem(filedata, file->GetFileSize());
+		if (file == nullptr)
+			return Resource<Texture>();
+
+		filesize = file->GetFileSize();
+
+		filedata = new char[filesize];
+		file->Read(filedata, filesize);
+	
+	}
+
+	SDL_RWops* rw = SDL_RWFromConstMem(filedata, filesize);
 	SDL_Surface* surface = IMG_LoadPNG_RW(rw);
 	delete[] filedata;
 
 	Texture* texture = new Texture;
 	texture->surface = surface;
 
-	if (!file->Close())
-	{
-		SDL_FreeSurface(surface);
-		return Resource<Texture>();
-	}
-	
 	internal = textures.AddResource(hash, texture);
 	if (internal == nullptr)
 		return Resource<Texture>();
