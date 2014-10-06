@@ -8,17 +8,21 @@ public:
 	~FilesystemArchive();
 	
 	/**
-		Clears the archive and searches a directory recursively, adding all files it finds.
-
-		path should be the relative or absolute path to a directory.
+		Clears the archive and stores the path. The path can be either absolute or relative. This will not search the directory.
 	*/
 	bool Open(const std::string& path);
+
+	/**
+		Searches the directory, specified by the archive path, recursively.
+	*/
 	std::vector<std::pair<std::string, File*>> GetFiles();
 private:
+	std::string path;
+
 	/** 
 		Search one directory recursively.
 	*/
-	void SearchDirectory(const std::string& directory, const std::string& relative);
+	void SearchDirectory(const std::string& directory, const std::string& relative, std::vector<std::pair<std::string, File*>>& files);
 };
 
 class FilesystemFile : public File

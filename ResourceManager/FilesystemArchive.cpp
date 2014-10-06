@@ -13,6 +13,9 @@ FilesystemArchive::~FilesystemArchive()
 
 bool FilesystemArchive::Open(const std::string& path)
 {
+	this->path = path;
+
+	/*
 	for (auto file : files)
 	{
 		file.second->Close();
@@ -21,6 +24,7 @@ bool FilesystemArchive::Open(const std::string& path)
 	files.clear();
 
 	SearchDirectory(path, "");
+	*/
 
 	return true;
 }
@@ -29,23 +33,26 @@ bool FilesystemArchive::Open(const std::string& path)
 
 std::vector<std::pair<std::string, File*>> FilesystemArchive::GetFiles()
 {
+	std::vector<std::pair<std::string, File*>> files;
+	SearchDirectory(path, "", files);
 	return files;
 }
 
 
-void FilesystemArchive::SearchDirectory(const std::string& directory, const std::string& relative)
+void FilesystemArchive::SearchDirectory(const std::string& directory, const std::string& relative, std::vector<std::pair<std::string, File*>>& files)
 {
 	for (std::tr2::sys::directory_iterator it(directory), end; it != end; ++it)
 	{
 		if (std::tr2::sys::is_directory(it->path()))
 		{
-			SearchDirectory(it->path(), it->path().filename() + std::tr2::sys::slash<std::tr2::sys::path>::value);
+			SearchDirectory(it->path(), relative + it->path().filename() + std::tr2::sys::slash<std::tr2::sys::path>::value, files);
 		}
 
 		if (std::tr2::sys::is_regular(it->path()))
 		{
 			files.push_back(std::pair<std::string, File*>(relative + it->path().filename(), new FilesystemFile(it->path().relative_path())));
 
+			/*
 			std::cout << "Found regular: " << it->path().filename() << std::endl;
 			std::cout << "\tParent path: " << it->path().parent_path() << std::endl;
 			std::cout << "\tRelative path: " << it->path().relative_path() << std::endl;
@@ -54,6 +61,7 @@ void FilesystemArchive::SearchDirectory(const std::string& directory, const std:
 			std::cout << "\tStem: " << it->path().stem() << std::endl;
 			std::cout << "\tMyRelative: " << relative + it->path().filename() << std::endl;
 			//std::cout << "Absolute path relative directory: " << std::tr2::sys:://std::tr2::sys::absolute(
+			*/
 		}
 	}
 }
@@ -69,6 +77,7 @@ FilesystemFile::FilesystemFile(const std::string& filepath)
 FilesystemFile::~FilesystemFile()
 {
 	if (file != nullptr)
+		fclose(file);
 }
 
 bool FilesystemFile::Open()
@@ -86,7 +95,7 @@ bool FilesystemFile::Close()
 
 size_t FilesystemFile::Read(void* ptr, size_t byteCount)
 {
-	return fread(ptr, byteCount, 1, file);
+	return fread(ptr, 1, byteCount, file);
 }
 
 bool FilesystemFile::Seek(long int offset, File::Origin origin)
