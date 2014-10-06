@@ -6,6 +6,9 @@
 
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
+#include "Renderer/Chunk/ChunkManager.h"
+#include <Filesystem.h>
+#include <FilesystemArchive.h>
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -15,6 +18,8 @@ Renderer* renderer;
 SDL_Window* window;
 SDL_GLContext context;
 TwBar* antbar;
+ChunkManager* chunkManager;
+Filesystem filesystem;
 
 #undef main
 
@@ -62,16 +67,19 @@ int main(int argc, char* argv[])
 	TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	antbar = TwNewBar("GEABar");
 
-	
+	//Add files
+	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
+
+	chunkManager = new ChunkManager(&filesystem, &camera);
 
 	//Initialize renderer
-	renderer = new Renderer(&camera, WINDOW_WIDTH, WINDOW_HEIGHT);
+	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Initialize camera
 	camera.SetLens(45.0f, 0.01f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Set up some anttweakbar bars
-	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(renderer->GetChunkManager()->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
+	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(chunkManager->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
 
 	//Timer
@@ -109,6 +117,8 @@ int main(int argc, char* argv[])
 		//Update camera matrices
 		camera.Update();
 
+		chunkManager->Update(dt);
+
 		//Render all the things!
 		renderer->Draw();
 
@@ -143,7 +153,7 @@ bool HandleEvents()
 						return false;
 					case SDLK_f:
 					{
-						renderer->DestroyBlock();
+						chunkManager->DestroyBlock();
 						TwRefreshBar(antbar);
 					}break;
 				}

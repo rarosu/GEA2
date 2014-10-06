@@ -2,8 +2,10 @@
 #include <string>
 #include <vector>
 #include "Chunk.h"
+#include "../Camera.h"
 #include <cstdint>
-
+#include <ChunkResourceManager.h>
+#include <map>
 
 #define SCX 32
 #define SCY 2
@@ -12,20 +14,22 @@
 class ChunkManager
 {
 public:
-	ChunkManager();
+	ChunkManager(Filesystem* filesystem, Camera* pcamera);
 	~ChunkManager();
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);
 	void Draw();
+	void Update(float dt);
+
+	void AddChunk(int x, int y, int z);
+	void RemoveChunk(int x, int y, int z);
 
 	int& GetNrOfBlocks();
 	int GetNrOfChunks();
 
-	void GenerateTerrain();
+	//Quick and dirty block destroyer, remove if needed
+	void DestroyBlock();
 
-	void Export(const char* fileName);
-	void Import(const char* fileName);
-	void ImportChunkAt(int x, int y, int z);
 private:
 	Chunk* chunkList[SCX][SCY][SCZ];
 
@@ -34,6 +38,10 @@ private:
 
 	Buffer worldMatBuf;
 
-	//TESTING
-	int xx, yy, zz, ii;
+	ChunkResourceManager chunkResManager;
+
+	std::vector<Resource<Chunk>> drawList;
+	std::map<int, Resource<Chunk>> existMap;
+
+	Camera* camera;
 };
