@@ -6,7 +6,7 @@ layout(location = 2) in vec2 in_texC;
 
 out vec3 out_normV;
 out vec2 out_texc;
-out float out_shade;
+out flat float out_shade;
 
 const vec3 g_dirToSunWorld = vec3(0.7, 1.0, 0.8);
 
