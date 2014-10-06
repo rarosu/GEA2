@@ -13,6 +13,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <mutex>
+#include <memory>
 #include "Archive.h"
 
 class Filesystem
@@ -21,10 +23,11 @@ PUBLIC:
 	template <typename T>
 	bool AddArchive(const std::string& path);
 
-	File* GetFile(const std::string& vpath);
+	std::shared_ptr<File> GetFile(const std::string& vpath);
 PRIVATE:
 	std::vector<Archive*> archives;
 	std::map<std::string, File*> files;
+	std::mutex mutex;
 };
 
 

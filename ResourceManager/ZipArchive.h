@@ -6,6 +6,7 @@
 #include <string>
 #include <unzip.h>
 #include "Archive.h"
+#include <mutex>
 
 class ZipArchive : public Archive
 {
@@ -18,12 +19,13 @@ private:
 	unzFile archive;
 	std::map<std::string, size_t> offsets;
 	std::string archivePath;
+	std::mutex mutex;
 };
 
 class ZipArchiveFile : public File
 {
 public:
-	ZipArchiveFile(unzFile archive, const unz_file_info& info, const unz_file_pos& position);
+	ZipArchiveFile(unzFile archive, const unz_file_info& info, const unz_file_pos& position, std::mutex* mutex);
 	~ZipArchiveFile();
 	bool Open();
 	bool Close();
@@ -35,4 +37,5 @@ private:
 	unzFile archive;
 	unz_file_info info;
 	unz_file_pos position;
+	std::mutex* mutex;
 };

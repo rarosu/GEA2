@@ -44,16 +44,12 @@ protected:
 	MockResourceManager rm;
 };
 
-
-
 TEST_F(ResourceManagerTest, ResourceConstructionAssignment)
 {
 	{
-		/*
-		Resource<MockResource> a;
-		ASSERT_EQ(a, nullptr);
-		*/
-
+		Resource<MockResource> e;
+		ASSERT_EQ(e, nullptr);
+	
 		Resource<MockResource> b = rm.Create();
 		ASSERT_NE(rm.container.resources.find(0), rm.container.resources.end());
 
