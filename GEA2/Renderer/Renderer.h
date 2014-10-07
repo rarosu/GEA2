@@ -8,10 +8,11 @@
 #include "Chunk/ChunkManager.h"
 #include "Texture.h"
 #include "GBuffer.h"
-
+#include "SSAO.h"
 class Renderer
 {
 public:
+
 	Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height);
 	~Renderer();
 
@@ -19,12 +20,12 @@ public:
 
 	void Resize(unsigned width, unsigned height);
 
-
-
+	bool& GetSSAOFlag();
 private:
 
 	ShaderProgram shaderProgram;
 	ShaderProgram output;
+	ShaderProgram outputWithSSAOBlur;
 
 	Mesh	fullscreenquad;
 	Camera* camera;
@@ -32,4 +33,6 @@ private:
 	GBuffer gbuffer;
 	ChunkManager* chunkManager;
 	Texture texture;
+	SSAO	ssao;
+	bool SSAOEnabled;
 };

@@ -81,6 +81,7 @@ int main(int argc, char* argv[])
 	//Set up some anttweakbar bars
 	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(chunkManager->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
+	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
 
 	//Timer
 	uint32_t oldTime, currentTime;

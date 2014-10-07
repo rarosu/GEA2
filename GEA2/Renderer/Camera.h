@@ -6,6 +6,15 @@
 class Camera
 {
 public:
+
+	struct CameraStruct
+	{
+		glm::mat4 view;
+		glm::mat4 proj;
+		glm::mat4 invview;
+		glm::mat4 invproj;
+	};
+
 	Camera();
 	~Camera();
 	
@@ -14,12 +23,13 @@ public:
 	void Pitch(float angle);
 	void Yaw(float angle);
 
-	 glm::vec3& GetPosition();
-	 glm::mat4& GetViewMatrix();
-	 glm::mat4& GetProjectionMatrix();
-	 glm::mat4& GetViewProjMatrix();
-	 glm::vec3& GetFacing();
-	 float&		GetSpeed();
+	CameraStruct& GetCameraStruct();
+	glm::vec3& GetPosition();
+	glm::mat4& GetViewMatrix();
+	glm::mat4& GetProjectionMatrix();
+	glm::mat4& GetViewProjMatrix();
+	glm::vec3& GetFacing();
+	float&		GetSpeed();
 
 	//Easy move methods
 	void MoveForward(float dt);
@@ -32,6 +42,8 @@ public:
 	void Update();
 
 private:
+
+	CameraStruct camStruct;
 
 	glm::mat4 viewMatrix;
 	glm::mat4 projectionMatrix;

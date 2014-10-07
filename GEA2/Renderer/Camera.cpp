@@ -15,6 +15,11 @@ void Camera::Update()
 {
 	viewMatrix = glm::lookAt(position, position + facing, up);
 	viewProjectionMatrix =  projectionMatrix * viewMatrix;
+
+	camStruct.view = viewMatrix;
+	camStruct.proj = projectionMatrix;
+	camStruct.invview = glm::inverse(viewMatrix);
+	camStruct.invproj = glm::inverse(projectionMatrix);
 }
 
 void Camera::SetLens(float fov, float nearPlane, float farPlane, int width, int height)
@@ -66,6 +71,11 @@ glm::mat4& Camera::GetViewProjMatrix()
 	return viewProjectionMatrix;
 }
 
+Camera::CameraStruct& Camera::GetCameraStruct()
+{
+	return camStruct;
+}
+
 void Camera::MoveForward(float dt)
 {
 	position +=  camSpeed * dt * facing;
@@ -105,3 +115,4 @@ float& Camera::GetSpeed()
 {
 	return camSpeed;
 }
+

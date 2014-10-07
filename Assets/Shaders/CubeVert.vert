@@ -12,7 +12,10 @@ const vec3 g_dirToSunWorld = vec3(0.7, 1.0, 0.8);
 
 layout(binding = 0, std140) uniform PerFrame
 {
-	mat4 viewProjectionMatrix;
+	mat4 viewMatrix;
+	mat4 projMatrix;
+	mat4 invviewMatrix;
+	mat4 invprojMatrix;
 };
 
 layout(binding = 1, std140) uniform PerObject
@@ -24,7 +27,7 @@ void main ()
 {
 	vec3 position = in_pos.xyz;
 	out_texc = in_texC;
-	out_normV = in_norm;
+	out_normV = vec3(viewMatrix * vec4(in_norm, 0));
 	out_shade = clamp(max(dot(in_norm, normalize(g_dirToSunWorld)), 0.0) + 0.3, 0.0, 1.0);
-	gl_Position = viewProjectionMatrix * worldMatrix * vec4(position, 1.0);
+	gl_Position =  projMatrix * viewMatrix * worldMatrix * vec4(position, 1.0);
 }
