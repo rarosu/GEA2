@@ -36,19 +36,15 @@ private:
 		Resource<Chunk> operator()(std::mutex* mutex, ChunkResourceManager* chunkLoader, int x, int y, int z)
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
-			
-			/*std::lock_guard<std::mutex> lock(*mutex);
 
-			if (chunk->changed)
-				chunk->UpdateChunk();*/
-	
+			chunk->UpdateChunk(mutex);
+
 			return chunk;
 		}
 	};
 
 	static const int CHUNK_LOAD_THREADS = 1;
 	static const int CHUNK_LOAD_DISTANCE = 16;
-
 
 	int nrOfChunks;
 	int nrOfBlocks;

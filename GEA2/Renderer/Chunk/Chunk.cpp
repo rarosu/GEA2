@@ -5,7 +5,7 @@
 #include <ChunkResourceManager.h>
 
 Chunk::Chunk(char* blockListMemory, const glm::vec3& worldPos, const MetaWorldHeader& metaHeader)
-	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), metaWorldHeader(metaHeader)
+: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), metaWorldHeader(metaHeader), vertexBuffer(GL_ARRAY_BUFFER)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
 
@@ -20,7 +20,7 @@ Chunk::~Chunk()
 
 }
 
-void Chunk::UpdateChunk()
+void Chunk::UpdateChunk(std::mutex* mutex)
 {
 	changed = false;
 
@@ -143,23 +143,21 @@ void Chunk::UpdateChunk()
 	if (numberOfElements == 0)
 		return;
 
-	//Create vertexbuffer!
-	chunkMesh.CreateVertexBuffer(&renderList[0], numberOfElements);
-	//chunkMesh.GetVertexBuffer()->BufferSubData(0, numberOfElements * sizeof(Vertex), &renderList[0]);
+	std::lock_guard<std::mutex> lock(*mutex);
+
+	vertexBuffer.BufferData(numberOfElements, sizeof(Vertex), &renderList[0], GL_STATIC_DRAW);
+
+	// Synch.
+	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	GLenum result;
+	while (true)
+	{
+		result = glClientWaitSync(fenceId, GL_SYNC_FLUSH_COMMANDS_BIT, GLuint64(5000000000)); //5 Second timeout
+		if (result != GL_TIMEOUT_EXPIRED) break; //we ignore timeouts and wait until all OpenGL commands are processed!
+	}
+
+	glDeleteSync(fenceId);
 }
-
-void Chunk::Draw()
-{
-	if(changed)
-		UpdateChunk();
-
-	//Don't draw if there are no vertices of no mesh ( these go hand-in-hand and only one is actually needed, but keeping them both for security)
-	if(!numberOfElements)
-		return;
-
-	chunkMesh.Draw(numberOfElements);
-}
-
 
 void Chunk::Set( int x, int y, int z, uint8_t type )
 {

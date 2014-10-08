@@ -36,4 +36,5 @@ private:
 	Texture texture;
 	SSAO	ssao;
 	bool SSAOEnabled;
+	GLuint vao;
 };

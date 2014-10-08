@@ -25,6 +25,7 @@ void ChunkManager::Update(float dt)
 			existMap[it->first] = chunk;
 
 			it = chunkFutures.erase(it);
+		
 		}
 		else
 		{
@@ -51,13 +52,33 @@ void ChunkManager::Update(float dt)
 
 void ChunkManager::Draw()
 {
+
+	// Synch.
+	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	GLenum result;
+	while (true)
+	{
+		result = glClientWaitSync(fenceId, GL_SYNC_FLUSH_COMMANDS_BIT, GLuint64(5000000000)); //5 Second timeout
+		if (result != GL_TIMEOUT_EXPIRED) break; //we ignore timeouts and wait until all OpenGL commands are processed!
+	}
+	glDeleteSync(fenceId);
+
+
+	glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
+
 	for (auto chunk : drawList)
 	{
-		worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunk->worldMatrix);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
+		if (!chunk->numberOfElements)
+			continue;
 
-		chunk->Draw();
-	}			
+		worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunk->worldMatrix);
+
+		glBindVertexBuffer(0, chunk->vertexBuffer.GetBufferId(), 0, chunk->vertexBuffer.GetElementSize());
+
+		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
+	}
+
+	std::cout << drawList.size() << std::endl;
 }
 
 uint8_t ChunkManager::Get(int x, int y, int z)
@@ -120,6 +141,7 @@ int ChunkManager::GetNrOfChunks()
 	}
 }*/
 
+
 void ChunkManager::AddChunk(int x, int y, int z)
 {
 	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
@@ -127,11 +149,12 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	{
 		chunkFutures.push_back(
 			std::pair<int, std::future<Resource<Chunk>>>(
-				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));	
 
-
+		existMap[pos] = Resource<Chunk>();
 	}
 }
+
 
 void ChunkManager::RemoveChunk(int x, int y, int z)
 {
@@ -141,6 +164,9 @@ void ChunkManager::RemoveChunk(int x, int y, int z)
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return;
+
 		auto itdraw = std::find(drawList.begin(), drawList.end(), itmap->second);
 		drawList.erase(itdraw);
 		existMap.erase(pos);

@@ -12,10 +12,7 @@ PoolAllocator::PoolAllocator(void* mem, unsigned elementSize, unsigned numElemen
 
 PoolAllocator::~PoolAllocator()
 {
-    if(m_start != 0) {
-        free(m_start);
-        m_start = 0;
-    }
+
 }
 
 void PoolAllocator::Initialize(unsigned elementSize, unsigned numElements)

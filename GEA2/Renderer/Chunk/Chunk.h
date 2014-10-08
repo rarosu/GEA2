@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdint>
 #include <glm.hpp>
+#include <mutex>
+
 
 struct MetaWorldHeader;
 
@@ -27,10 +29,7 @@ public:
 	void Set(int x, int y, int z, uint8_t type);
 
 	//Update the VB of the chunk if blocks have been altered
-	void UpdateChunk();
-
-	//Get the Mesh of the chunk
-	void Draw();
+	void UpdateChunk(std::mutex* mutex);
 
 	//Block list
 	uint8_t* blockList;
@@ -49,12 +48,12 @@ public:
 	//Temp world matrix
 	glm::mat4 worldMatrix;
 
-private:
+	Buffer vertexBuffer;
 
 	//Number of elements
 	size_t numberOfElements;
 
-	Mesh chunkMesh;
+private:
 
 	const MetaWorldHeader& metaWorldHeader;
 

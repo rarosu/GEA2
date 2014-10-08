@@ -47,11 +47,11 @@ int main(int argc, char* argv[])
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-	glewExperimental = GL_TRUE; 
 	context = SDL_GL_CreateContext(window);
 
 	SDL_GL_SetSwapInterval(0);
 
+	glewExperimental = GL_TRUE;
 	glewInit();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -153,6 +153,7 @@ int main(int argc, char* argv[])
 	}
 
 	delete renderer;
+	
 	TwTerminate();
 	IMG_Quit();
 	SDL_GL_DeleteContext(context);
