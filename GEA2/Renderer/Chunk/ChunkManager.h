@@ -37,6 +37,7 @@ private:
 		Resource<Chunk> operator()(ChunkResourceManager* chunkLoader, int x, int y, int z)
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
+			//std::cout << "Chunk " << " " << x << " " << " " << y << " " << z << " loaded..." << std::endl;
 			return chunk;
 		}
 	};

@@ -108,6 +108,18 @@ int ChunkManager::GetNrOfChunks()
 	return nrOfChunks;
 }
 
+/*void ChunkManager::AddChunk(int x, int y, int z)
+{
+	int pos = SCZ * SCY * x + SCZ * y + z;
+	if (existMap.find(pos) == existMap.end())
+	{
+		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
+
+		drawList.push_back(chunk);
+		existMap[pos] = chunk;
+	}
+}*/
+
 void ChunkManager::AddChunk(int x, int y, int z)
 {
 	int pos = SCZ * SCY * x + SCZ * y + z;
@@ -116,6 +128,8 @@ void ChunkManager::AddChunk(int x, int y, int z)
 		chunkFutures.push_back(
 			std::pair<int, std::future<Resource<Chunk>>>(
 				pos, chunkLoadPool.AddTask<LoadChunkTask>(&chunkResManager, x, y, z)));
+
+
 	}
 }
 

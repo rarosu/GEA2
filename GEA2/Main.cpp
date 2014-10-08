@@ -73,6 +73,8 @@ int main(int argc, char* argv[])
 
 	chunkManager = new ChunkManager(&filesystem, &allocator, &camera);
 
+	SDL_GL_MakeCurrent(window, context);
+
 	//Initialize renderer
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
