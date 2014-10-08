@@ -2,7 +2,7 @@
 #include <glew.h>
 #include <assert.h>
 
-extern SDL_Window* g_window;
+extern SDL_Window* window;
 
 Worker::Worker(size_t _id, ThreadPool& _pool, SDL_GLContext _context)
 	: id(_id), pool(_pool), context(_context)
@@ -10,7 +10,7 @@ Worker::Worker(size_t _id, ThreadPool& _pool, SDL_GLContext _context)
 
 void Worker::operator()()
 {
-	SDL_GL_MakeCurrent(g_window, context);
+	SDL_GL_MakeCurrent(window, context);
 	
 	while(true)
 	{
@@ -34,7 +34,7 @@ void Worker::operator()()
 		task();
 	}
 
-	SDL_GL_MakeCurrent(g_window, nullptr);
+	SDL_GL_MakeCurrent(window, nullptr);
 	SDL_GL_DeleteContext(context);
 }
 
@@ -45,7 +45,7 @@ ThreadPool::ThreadPool(size_t size)
 	std::vector<SDL_GLContext> contexts(size + 1);
 	for(size_t i = 0; i < contexts.size(); i++)
 	{
-		contexts[i] = SDL_GL_CreateContext(g_window);
+		contexts[i] = SDL_GL_CreateContext(window);
 		assert(contexts[i] != nullptr);
 	}
 	for(size_t i = 0; i < threads.size(); i++)

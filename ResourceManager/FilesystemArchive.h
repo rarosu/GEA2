@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Archive.h"
+#include <mutex>
 
 class FilesystemArchive : public Archive
 {
@@ -62,6 +63,7 @@ public:
 	*/
 	long int GetFileSize();
 private:
+	std::mutex mutex;
 	std::string filepath;
 	FILE* file;
 };

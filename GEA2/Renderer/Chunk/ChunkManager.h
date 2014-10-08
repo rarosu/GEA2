@@ -5,6 +5,7 @@
 #include "../Camera.h"
 #include <cstdint>
 #include <ChunkResourceManager.h>
+#include <ThreadPool.h>
 #include <map>
 
 #define SCX 256
@@ -31,6 +32,16 @@ public:
 	void DestroyBlock();
 
 private:
+	struct LoadChunkTask
+	{
+		Resource<Chunk> operator()(ChunkResourceManager* chunkLoader, int x, int y, int z)
+		{
+			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
+			return chunk;
+		}
+	};
+
+	static const int CHUNK_LOAD_THREADS = 8;
 	static const int CHUNK_LOAD_DISTANCE = 16;
 
 	Chunk* chunkList[SCX][SCY][SCZ];
@@ -41,7 +52,8 @@ private:
 	Buffer worldMatBuf;
 
 	ChunkResourceManager chunkResManager;
-
+	ThreadPool chunkLoadPool;
+	std::vector<std::pair<int, std::future<Resource<Chunk>>>> chunkFutures;
 	std::vector<Resource<Chunk>> drawList;
 	std::map<int, Resource<Chunk>> existMap;
 

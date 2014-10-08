@@ -3,7 +3,7 @@
 #include <iostream>
 
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
-: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera)
+: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS)
 {
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 }
@@ -15,6 +15,25 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Update(float dt)
 {
+	// Check for loaded chunks to add to the draw list.
+	std::vector<std::pair<int, std::future<Resource<Chunk>>>>::iterator it;
+	for (it = chunkFutures.begin(); it != chunkFutures.end();)
+	{
+		if (it->second._Is_ready())
+		{
+			Resource<Chunk> chunk = it->second.get();
+			drawList.push_back(chunk);
+			existMap[it->first] = chunk;
+
+			chunkFutures.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+
+	// Check for chunks to load and unload.
 	for (int x = 0; x < SCX; ++x)
 		for (int y = 0; y < SCY; ++y)	
 			for (int z = 0; z < SCZ; ++z)
@@ -95,16 +114,18 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	int pos = SCZ * SCY * x + SCZ * y + z;
 	if (existMap.find(pos) == existMap.end())
 	{
-		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
-		
-		drawList.push_back(chunk);
-		existMap[pos] = chunk;
+		std::pair<int, std::future<Resource<Chunk>>> task;
+		task.first = pos;
+		task.second = chunkLoadPool.AddTask<LoadChunkTask>(&chunkResManager, x, y, z);
+		chunkFutures.push_back(task);
 	}
 }
 
 void ChunkManager::RemoveChunk(int x, int y, int z)
 {
 	int pos = SCZ * SCY * x + SCZ * y + z;
+
+	// Check if there is a chunk loaded.
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
@@ -112,6 +133,8 @@ void ChunkManager::RemoveChunk(int x, int y, int z)
 		drawList.erase(itdraw);
 		existMap.erase(pos);
 	}
+
+	// TODO: Check if there is a chunk currently being loaded and in that case abort the task.
 }
 
 void ChunkManager::DestroyBlock()

@@ -40,8 +40,10 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 		int i = SCZ * SCY * x + SCZ * y + z;
 		uint8_t* compressed = new uint8_t[header[i].size];
+
 		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
 		file->Read(compressed, header[i].size);
+
 		Chunk* chunk = new Chunk(glm::vec3(x * CX, y * CY, z * CZ));
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
 		chunk->changed = true;

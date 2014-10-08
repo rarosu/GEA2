@@ -14,7 +14,7 @@
 #include <Timer.h>
 #include <vector>
 
-SDL_Window* g_window;
+SDL_Window* window;
 //TextureResourceManager* g_textureLoader;
 
 class ThreadPoolTest : public ::testing::Test
@@ -28,7 +28,7 @@ public:
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 4);
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-		g_window = SDL_CreateWindow("GEA2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_OPENGL);
+		window = SDL_CreateWindow("GEA2", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 0, 0, SDL_WINDOW_OPENGL);
 
 		int glContextFlags = 0;
 #if defined (_DEBUG) 
@@ -57,7 +57,7 @@ public:
 		delete textureLoader;
 		delete pool;
 
-		SDL_DestroyWindow(g_window);
+		SDL_DestroyWindow(window);
 		IMG_Quit();
 		SDL_Quit();
 	}

@@ -82,8 +82,12 @@ FilesystemFile::~FilesystemFile()
 
 bool FilesystemFile::Open()
 {
+	// Make sure the file cannot be opened if it is already opened.
+	if (file != nullptr)
+		return false;
+
 	file = fopen(filepath.c_str(), "rb");
-	return file != NULL;
+	return file != nullptr;
 }
 
 bool FilesystemFile::Close()
@@ -95,6 +99,7 @@ bool FilesystemFile::Close()
 
 size_t FilesystemFile::Read(void* ptr, size_t byteCount)
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	return fread(ptr, 1, byteCount, file);
 }
 
@@ -113,16 +118,19 @@ bool FilesystemFile::Seek(long int offset, File::Origin origin)
 			o = SEEK_CUR;
 	}
 
+	std::lock_guard<std::mutex> lock(mutex);
 	return fseek(file, offset, o) != 0;
 }
 
 long int FilesystemFile::Tell()
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	return ftell(file);
 }
 
 long int FilesystemFile::GetFileSize()
 {
+	std::lock_guard<std::mutex> lock(mutex);
 	long int current = ftell(file);
 	fseek(file, 0, SEEK_END);
 	long int size = ftell(file);
