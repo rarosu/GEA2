@@ -3,9 +3,8 @@
 #include <iostream>
 
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
-: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera)
+	: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
 {
-	//hej hur stor är världen
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 }
 
@@ -16,12 +15,12 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Update(float dt)
 {
-	for (int x = 0; x < SCX; ++x)
-		for (int y = 0; y < SCY; ++y)	
-			for (int z = 0; z < SCZ; ++z)
+	for (int x = 0; x < metaHeader.SCX; ++x)
+		for (int y = 0; y < metaHeader.SCY; ++y)	
+			for (int z = 0; z < metaHeader.SCZ; ++z)
 			{
-				float dist = glm::distance(glm::vec3(x*CX, y*CY, z*CZ), camera->GetPosition());
-				if (dist < CX * CHUNK_LOAD_DISTANCE)
+				float dist = glm::distance(glm::vec3(x*metaHeader.CX, y*metaHeader.CY, z*metaHeader.CZ), camera->GetPosition());
+				if (dist < metaHeader.CX * CHUNK_LOAD_DISTANCE)
 				{
 					AddChunk(x, y, z);
 				}
@@ -45,17 +44,17 @@ void ChunkManager::Draw()
 
 uint8_t ChunkManager::Get(int x, int y, int z)
 {
-	int cx = x / CX;
-	int cy = y / CY;
-	int cz = z / CZ;
+	int cx = x / metaHeader.CX;
+	int cy = y / metaHeader.CY;
+	int cz = z / metaHeader.CZ;
 
-	int pos = SCZ * SCY * cx + SCZ * cy + cz;
+	int pos = metaHeader.SCZ * metaHeader.SCY * cx + metaHeader.SCZ * cy + cz;
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
-		x %= CX;
-		y %= CY;
-		z %= CZ;
+		x %= metaHeader.CX;
+		y %= metaHeader.CY;
+		z %= metaHeader.CZ;
 
 		return itmap->second->Get(x, y, z);
 	}
@@ -65,17 +64,17 @@ uint8_t ChunkManager::Get(int x, int y, int z)
 
 void ChunkManager::Set( int x, int y, int z, uint8_t type )
 {
-	int cx = x / CX;
-	int cy = y / CY;
-	int cz = z / CZ;
+	int cx = x / metaHeader.CX;
+	int cy = y / metaHeader.CY;
+	int cz = z / metaHeader.CZ;
 
-	int pos = SCZ * SCY * cx + SCZ * cy + cz;
+	int pos = metaHeader.SCZ * metaHeader.SCY * cx + metaHeader.SCZ * cy + cz;
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
-		x %= CX;
-		y %= CY;
-		z %= CZ;
+		x %= metaHeader.CX;
+		y %= metaHeader.CY;
+		z %= metaHeader.CZ;
 
 		itmap->second->Set(x, y, z, type);
 	}
@@ -93,7 +92,7 @@ int ChunkManager::GetNrOfChunks()
 
 void ChunkManager::AddChunk(int x, int y, int z)
 {
-	int pos = SCZ * SCY * x + SCZ * y + z;
+	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
 	if (existMap.find(pos) == existMap.end())
 	{
 		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
@@ -105,7 +104,7 @@ void ChunkManager::AddChunk(int x, int y, int z)
 
 void ChunkManager::RemoveChunk(int x, int y, int z)
 {
-	int pos = SCZ * SCY * x + SCZ * y + z;
+	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{

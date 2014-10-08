@@ -5,7 +5,7 @@
 ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
 {
 	this->filesystem = filesystem;
-	file = filesystem->GetFile("testtest.world");
+	file = filesystem->GetFile("samesize.world");
 	
 	//Header format
 		//-header_global	- 0 bytes
@@ -24,16 +24,16 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
 	
 
 	//Read global header data!
-	header_global global_header;
-	file->Read(&global_header, sizeof(header_global));
+	MetaWorldHeader global_header;
+	file->Read(&global_header, sizeof(MetaWorldHeader));
 	globalFileHeader = global_header;
 
-	header_element* header = new header_element[global_header.SCX * global_header.SCY * global_header.SCZ];
-	file->Read(header, global_header.header_size - sizeof(header_global));
+	header = new header_element[global_header.SCX * global_header.SCY * global_header.SCZ];
+	file->Read(header, global_header.header_size - sizeof(MetaWorldHeader));
 }
 ChunkResourceManager::~ChunkResourceManager()
 {
-	delete[] header_element;
+	delete[] header;
 }
 
 void ChunkResourceManager::Destructor(InternalResource<Chunk>* internal)
@@ -46,7 +46,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 {
 	std::hash<std::string> hasher;
 	std::stringstream ss;
-	std::string filename("testtest.world");
+	std::string filename("samesize.world");
 	ss << filename << ',' << x << ',' << y << ',' << z;
 	auto hash = hasher(ss.str());
 
@@ -72,8 +72,9 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		file->Read(compressed, header[i].size);
 
 		//Create a chunk and uncompress data, set chunk to changed
-		Chunk* chunk = new Chunk(glm::vec3(x * globalFileHeader.CX, y * globalFileHeader.CY, z * globalFileHeader.CZ));
+		Chunk* chunk = new Chunk(glm::vec3(x * globalFileHeader.CX, y * globalFileHeader.CY, z * globalFileHeader.CZ), globalFileHeader);
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
+
 		chunk->changed = true;
 
 		delete[] compressed;
@@ -84,4 +85,9 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
 	}
+}
+
+const MetaWorldHeader& ChunkResourceManager::GetGlobalWorldHeader()
+{
+	return globalFileHeader;
 }

@@ -25,10 +25,9 @@ public:
 
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
+	
+	
 
-	const int SCX;
-	const int SCY;
-	const int SCZ;
 private:
 
 	static const int CHUNK_LOAD_DISTANCE = 16;
@@ -44,4 +43,6 @@ private:
 	std::map<int, Resource<Chunk>> existMap;
 
 	Camera* camera;
+	
+	const MetaWorldHeader& metaHeader;
 };
