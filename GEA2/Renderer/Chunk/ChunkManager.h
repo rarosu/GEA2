@@ -41,7 +41,7 @@ private:
 		}
 	};
 
-	static const int CHUNK_LOAD_THREADS = 8;
+	static const int CHUNK_LOAD_THREADS = 1;
 	static const int CHUNK_LOAD_DISTANCE = 16;
 
 	Chunk* chunkList[SCX][SCY][SCZ];

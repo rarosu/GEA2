@@ -25,7 +25,7 @@ void ChunkManager::Update(float dt)
 			drawList.push_back(chunk);
 			existMap[it->first] = chunk;
 
-			chunkFutures.erase(it);
+			it = chunkFutures.erase(it);
 		}
 		else
 		{
