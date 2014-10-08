@@ -7,14 +7,14 @@
 #include <ChunkResourceManager.h>
 #include <map>
 
-#define SCX 256
+#define SCX 32
 #define SCY 2
-#define SCZ 256
+#define SCZ 32
 
 class ChunkManager
 {
 public:
-	ChunkManager(Filesystem* filesystem, Camera* pcamera);
+	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera);
 	~ChunkManager();
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);

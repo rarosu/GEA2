@@ -2,23 +2,30 @@
 #include <sstream>
 #include "RLE/rle.c"
 
-ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
+ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, MemoryAllocator* _allocator)
+	: allocator(_allocator->GetInterface("ChunkResourceManager"))
 {
 	this->filesystem = filesystem;
-	file = filesystem->GetFile("testtest.world");
+	file = filesystem->GetFile("world.world");
 	
 	int header_size;
 	file->Read(&header_size, sizeof(int));
 	file->Read(header, header_size - sizeof(int));
+
+	void* chunkMem = allocator.Alloc(sizeof(Chunk)* SCX * SCY * SCZ);
+
+	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, sizeof(Chunk), SCX * SCY * SCZ);
 }
 ChunkResourceManager::~ChunkResourceManager()
 {
-
+	allocator.Free(chunkMem);
+	allocator.Free(pool);
 }
 
 void ChunkResourceManager::Destructor(InternalResource<Chunk>* internal)
 {
-	delete internal->resource;
+	pool->Free(internal->resource);
+
 	chunks.RemoveResource(internal->hash);
 }
 
@@ -26,7 +33,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 {
 	std::hash<std::string> hasher;
 	std::stringstream ss;
-	std::string filename("testtest.world");
+	std::string filename("world.world");
 	ss << filename << ',' << x << ',' << y << ',' << z;
 	auto hash = hasher(ss.str());
 
@@ -42,7 +49,9 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		uint8_t* compressed = new uint8_t[header[i].size];
 		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
 		file->Read(compressed, header[i].size);
-		Chunk* chunk = new Chunk(glm::vec3(x * CX, y * CY, z * CZ));
+
+		Chunk* chunk = new(pool->Alloc()) Chunk(glm::vec3(x * CX, y * CY, z * CZ));
+		
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
 		chunk->changed = true;
 

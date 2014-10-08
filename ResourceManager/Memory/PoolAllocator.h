@@ -10,7 +10,7 @@ struct PoolElement
 class PoolAllocator
 {
 public:
-	PoolAllocator(unsigned elementSize, unsigned numElements);
+	PoolAllocator(void* mem, unsigned elementSize, unsigned numElements);
 	~PoolAllocator();
 
 	void Free();
@@ -27,7 +27,7 @@ private:
 class ThreadedPoolAllocator
 {
 public:
-	ThreadedPoolAllocator(unsigned elementSize, unsigned numElements);
+	ThreadedPoolAllocator(void* mem, unsigned elementSize, unsigned numElements);
 	void* Alloc();
 	void Free(void* ptr);
 private:

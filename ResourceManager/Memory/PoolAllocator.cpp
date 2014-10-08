@@ -2,10 +2,10 @@
 #include <malloc.h>
 #include <cassert>
 
-PoolAllocator::PoolAllocator(unsigned elementSize, unsigned numElements)
+PoolAllocator::PoolAllocator(void* mem, unsigned elementSize, unsigned numElements)
 	: m_start(nullptr), m_next(nullptr)
 {
-	m_start = (PoolElement*)malloc( elementSize * numElements );
+	m_start = new(mem) PoolElement[elementSize * numElements];
 
 	Initialize(elementSize, numElements);
 }
@@ -74,8 +74,8 @@ void PoolAllocator::Free(void* ptr)
 	m_next = head;
 }
 
-ThreadedPoolAllocator::ThreadedPoolAllocator(unsigned elementSize, unsigned numElements)
-	: allocator(elementSize, numElements)
+ThreadedPoolAllocator::ThreadedPoolAllocator(void* mem, unsigned elementSize, unsigned numElements)
+	: allocator(mem, elementSize, numElements)
 {
 
 }

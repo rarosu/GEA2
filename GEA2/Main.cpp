@@ -20,6 +20,7 @@ SDL_GLContext context;
 TwBar* antbar;
 ChunkManager* chunkManager;
 Filesystem filesystem;
+MemoryAllocator allocator;
 
 #undef main
 
@@ -70,7 +71,7 @@ int main(int argc, char* argv[])
 	//Add files
 	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
 
-	chunkManager = new ChunkManager(&filesystem, &camera);
+	chunkManager = new ChunkManager(&filesystem, &allocator, &camera);
 
 	//Initialize renderer
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -78,13 +79,20 @@ int main(int argc, char* argv[])
 	//Initialize camera
 	camera.SetLens(45.0f, 1.0f, 500.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	float fps = 0;
+
 	//Set up some anttweakbar bars
 	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(chunkManager->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
+	TwAddVarRO(antbar, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS'");
 
 	//Timer
 	uint32_t oldTime, currentTime;
 	float dt;
+
+	int frames = 0;
+	
+	float dtime = 0;
 
 	currentTime = SDL_GetTicks();
 
@@ -94,6 +102,16 @@ int main(int argc, char* argv[])
 		oldTime = currentTime;
 		currentTime = SDL_GetTicks();
 		dt = (currentTime - oldTime) / 1000.0f;
+
+		frames++;
+		dtime += dt;
+
+		if (frames == 30)
+		{
+			fps = frames / dtime;
+			frames = 0;
+			dtime = 0;
+		}
 
 		//Event handling
 		running = HandleEvents();
