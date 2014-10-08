@@ -114,10 +114,9 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	int pos = SCZ * SCY * x + SCZ * y + z;
 	if (existMap.find(pos) == existMap.end())
 	{
-		std::pair<int, std::future<Resource<Chunk>>> task;
-		task.first = pos;
-		task.second = chunkLoadPool.AddTask<LoadChunkTask>(&chunkResManager, x, y, z);
-		chunkFutures.push_back(task);
+		chunkFutures.push_back(
+			std::pair<int, std::future<Resource<Chunk>>>(
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&chunkResManager, x, y, z)));
 	}
 }
 
