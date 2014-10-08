@@ -6,10 +6,7 @@
 #include <cstdint>
 #include <glm.hpp>
 
-#define SEALEVEL 4
-#define CX 16
-#define CY 32
-#define CZ 16
+struct MetaWorldHeader;
 
 //Number of textures in texture atlas in x and y coords. Change this to match actual texture atlas!
 #define ATLASTEXTURES_X 16
@@ -20,7 +17,7 @@ typedef glm::detail::tvec4<uint8_t, glm::lowp> byte4;
 class Chunk
 {
 public:
-	Chunk(const glm::vec3& worldPos);
+	Chunk(char* blockListMemory, const glm::vec3& worldPos, const MetaWorldHeader& metaHeader);
 	~Chunk();
 
 	//Get block type at chunk relative position
@@ -35,11 +32,8 @@ public:
 	//Get the Mesh of the chunk
 	void Draw();
 
-	//Generate terrain
-	void Noise(int seed, int ax, int ay, int az);
-
 	//Block list
-	uint8_t	blockList[CX][CY][CZ];
+	uint8_t* blockList;
 
 	//Pointers to neighbour chunks, nullptr if no neighbour
 	Chunk* left;
@@ -60,7 +54,10 @@ private:
 	//Number of elements
 	size_t numberOfElements;
 
-	//vertex buffer
-	//Mesh* chunkMesh;
 	Mesh chunkMesh;
+
+	const MetaWorldHeader& metaWorldHeader;
+
+	int GetBlockArrayIndex(int x, int y, int z);
+
 };

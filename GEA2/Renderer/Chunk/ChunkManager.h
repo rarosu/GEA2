@@ -9,14 +9,10 @@
 #include <map>
 #include <mutex>
 
-#define SCX 32
-#define SCY 2
-#define SCZ 32
-
 class ChunkManager
 {
 public:
-	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera);
+	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath);
 	~ChunkManager();
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);
@@ -31,6 +27,8 @@ public:
 
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
+	
+	
 
 private:
 	struct LoadChunkTask
@@ -39,10 +37,10 @@ private:
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
 			
-			std::lock_guard<std::mutex> lock(*mutex);
+			/*std::lock_guard<std::mutex> lock(*mutex);
 
 			if (chunk->changed)
-				chunk->UpdateChunk();
+				chunk->UpdateChunk();*/
 	
 			return chunk;
 		}
@@ -51,7 +49,6 @@ private:
 	static const int CHUNK_LOAD_THREADS = 1;
 	static const int CHUNK_LOAD_DISTANCE = 16;
 
-	Chunk* chunkList[SCX][SCY][SCZ];
 
 	int nrOfChunks;
 	int nrOfBlocks;
@@ -66,4 +63,6 @@ private:
 
 	Camera* camera;
 	std::mutex mutex;
+
+	const MetaWorldHeader& metaHeader;
 };

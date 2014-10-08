@@ -37,7 +37,7 @@ bool GBuffer::Init(unsigned windowWidth, unsigned windowHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, windowWidth, windowHeight, 0, GL_RGB, GL_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + GBUFFER_TEXTURE_NORMALS, GL_TEXTURE_2D, textures[GBUFFER_TEXTURE_NORMALS], 0);
 
 	//Depth texture
@@ -91,7 +91,7 @@ void GBuffer::Resize(unsigned windowWidth, unsigned windowHeight)
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, windowWidth, windowHeight, 0, GL_RGB, GL_BYTE, 0);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + GBUFFER_TEXTURE_NORMALS, GL_TEXTURE_2D, textures[GBUFFER_TEXTURE_NORMALS], 0);
 
 	//Depth texture
@@ -110,6 +110,8 @@ void GBuffer::BindTextures()
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, textures[i]);
 	}
+	glActiveTexture(GL_TEXTURE0 + GBUFFER_NUM_TEXTURES);
+	glBindTexture(GL_TEXTURE_2D, depthTexture);
 }
 
 void GBuffer::UnbindTextures()
@@ -121,5 +123,7 @@ void GBuffer::UnbindTextures()
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
+	glActiveTexture(GL_TEXTURE0 + GBUFFER_NUM_TEXTURES);
+	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
