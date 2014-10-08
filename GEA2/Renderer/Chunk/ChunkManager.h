@@ -7,6 +7,7 @@
 #include <ChunkResourceManager.h>
 #include <ThreadPool.h>
 #include <map>
+#include <mutex>
 
 #define SCX 32
 #define SCY 2
@@ -34,10 +35,15 @@ public:
 private:
 	struct LoadChunkTask
 	{
-		Resource<Chunk> operator()(ChunkResourceManager* chunkLoader, int x, int y, int z)
+		Resource<Chunk> operator()(std::mutex* mutex, ChunkResourceManager* chunkLoader, int x, int y, int z)
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
-			//std::cout << "Chunk " << " " << x << " " << " " << y << " " << z << " loaded..." << std::endl;
+			
+			std::lock_guard<std::mutex> lock(*mutex);
+
+			if (chunk->changed)
+				chunk->UpdateChunk();
+	
 			return chunk;
 		}
 	};
@@ -59,4 +65,5 @@ private:
 	std::map<int, Resource<Chunk>> existMap;
 
 	Camera* camera;
+	std::mutex mutex;
 };

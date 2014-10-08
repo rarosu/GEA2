@@ -54,7 +54,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		Chunk* chunk = new(pool->Alloc()) Chunk(glm::vec3(x * CX, y * CY, z * CZ));
 		
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
-		chunk->changed = true;
+		//chunk->changed = true;
 
 		delete[] compressed;
 

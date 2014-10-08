@@ -4,7 +4,7 @@
 #include <gtc/matrix_transform.hpp>
 
 Chunk::Chunk(const glm::vec3& worldPos)
-	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr)
+: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
 	//Set all blocks in chunk to 0 (air), this causes the mesh generation to not create any vertices, see UpdateChunk() for deatails
@@ -13,9 +13,7 @@ Chunk::Chunk(const glm::vec3& worldPos)
 
 Chunk::~Chunk()
 {
-	//Delete chunk mesh on chunk destruction
-	if (chunkMesh)
-		delete chunkMesh;
+
 }
 
 void Chunk::UpdateChunk()
@@ -137,33 +135,25 @@ void Chunk::UpdateChunk()
 
 	numberOfElements = renderList.size();
 
-	//Delete old mesh 
-	if (chunkMesh)
-		delete chunkMesh;
-
 	//Don't create mesh if all blocks are air
 	if (numberOfElements == 0)
 		return;
 
 	//Create vertexbuffer!
-	chunkMesh = new Mesh();
-	chunkMesh->CreateVertexBuffer(&renderList[0], numberOfElements);
-	
+	chunkMesh.CreateVertexBuffer(&renderList[0], numberOfElements);
+	//chunkMesh.GetVertexBuffer()->BufferSubData(0, numberOfElements * sizeof(Vertex), &renderList[0]);
 }
 
 void Chunk::Draw()
 {
-	if(changed)
-		UpdateChunk();
+	/*if(changed)
+		UpdateChunk();*/
 
 	//Don't draw if there are no vertices of no mesh ( these go hand-in-hand and only one is actually needed, but keeping them both for security)
 	if(!numberOfElements)
 		return;
 
-	if (!chunkMesh)
-		return;
-
-	chunkMesh->Draw();
+	chunkMesh.Draw(numberOfElements);
 }
 
 

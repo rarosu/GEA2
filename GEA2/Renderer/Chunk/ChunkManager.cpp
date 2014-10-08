@@ -127,7 +127,7 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	{
 		chunkFutures.push_back(
 			std::pair<int, std::future<Resource<Chunk>>>(
-				pos, chunkLoadPool.AddTask<LoadChunkTask>(&chunkResManager, x, y, z)));
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));
 
 
 	}

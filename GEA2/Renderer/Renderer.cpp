@@ -50,8 +50,10 @@ void Renderer::Draw()
 	//Bind texture atlas(block textures)
 	texture.Bind(0);
 	shaderProgram.Use();
+
 	//Render all chunks
 	chunkManager->Draw();
+
 	texture.Unbind(0);
 
 	//TODO: Add SSAO to output

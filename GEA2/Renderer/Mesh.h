@@ -32,11 +32,12 @@ public:
 
 	//Creaters
 	void CreateVertexBuffer(Vertex* vertices, unsigned numberOfVertices);
-
+	
 	//Other
 	void Bind();
 	void Unbind();
 	void Draw();
+	void Draw(size_t numElements);
 
 private:
 

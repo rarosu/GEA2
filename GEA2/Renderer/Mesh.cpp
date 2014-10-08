@@ -33,7 +33,7 @@ void Mesh::SetWireFrame( bool wireFrame )
 
 void Mesh::CreateVertexBuffer( Vertex* vertices, unsigned numberOfVertices )
 {
-	vertexBuffer.BufferData(numberOfVertices, sizeof(Vertex), vertices, GL_STATIC_DRAW);
+	vertexBuffer.BufferData(numberOfVertices, sizeof(Vertex), vertices, GL_DYNAMIC_DRAW);
 	vertexAttributes.Init(3);
 	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), 0);
 	vertexAttributes.SetVertexAttribPointer(vertexBuffer.GetBufferId(), 1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (char*)0 + 3 * sizeof(float));
@@ -53,7 +53,7 @@ void Mesh::Unbind()
 void Mesh::Draw()
 {
 	Bind();
-	if(wireFrame)
+	if (wireFrame)
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glDrawArrays(primitiveType, 0, vertexBuffer.GetNumElements());
@@ -62,6 +62,22 @@ void Mesh::Draw()
 	else
 	{
 		glDrawArrays(primitiveType, 0, vertexBuffer.GetNumElements());
+	}
+	Unbind();
+}
+
+void Mesh::Draw(size_t numElements)
+{
+	Bind();
+	if(wireFrame)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		glDrawArrays(primitiveType, 0, numElements);
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	}
+	else
+	{
+		glDrawArrays(primitiveType, 0, numElements);
 	}
 	Unbind();
 }

@@ -61,7 +61,6 @@ private:
 	size_t numberOfElements;
 
 	//vertex buffer
-	Mesh* chunkMesh;
-
-	
+	//Mesh* chunkMesh;
+	Mesh chunkMesh;
 };

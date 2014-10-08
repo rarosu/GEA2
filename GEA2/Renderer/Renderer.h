@@ -19,8 +19,6 @@ public:
 
 	void Resize(unsigned width, unsigned height);
 
-
-
 private:
 
 	ShaderProgram shaderProgram;
