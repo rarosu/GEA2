@@ -1,11 +1,14 @@
 #include "ChunkResourceManager.h"
 #include <sstream>
 #include "RLE/rle.c"
+#include <iostream>
 
-ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
+ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, const std::string& vWorldPath)
 {
+	currentVWorldPath = vWorldPath;
+
 	this->filesystem = filesystem;
-	file = filesystem->GetFile("samesize.world");
+	file = filesystem->GetFile(currentVWorldPath);
 	
 	//Header format
 		//-header_global	- 0 bytes
@@ -28,6 +31,13 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
 	file->Read(&global_header, sizeof(MetaWorldHeader));
 	globalFileHeader = global_header;
 
+	//Print world data
+	std::cout << "World '" << vWorldPath << "' header read!" << std::endl;
+	std::cout << "Chunks: x: " << global_header.SCX << " y: " << global_header.SCY << " z: " << global_header.SCZ << std::endl;
+	std::cout << "Blocks: x: " << global_header.CX << " y: " << global_header.CY << " z: " << global_header.CZ << std::endl;
+	std::cout << "Total chunks: " << global_header.SCX * global_header.SCY * global_header.SCZ << std::endl;
+	std::cout << "Total blocks: " << global_header.SCX * global_header.SCY * global_header.SCZ * global_header.CX * global_header.CY * global_header.CZ << std::endl;
+
 	header = new header_element[global_header.SCX * global_header.SCY * global_header.SCZ];
 	file->Read(header, global_header.header_size - sizeof(MetaWorldHeader));
 }
@@ -46,7 +56,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 {
 	std::hash<std::string> hasher;
 	std::stringstream ss;
-	std::string filename("samesize.world");
+	std::string filename(currentVWorldPath);
 	ss << filename << ',' << x << ',' << y << ',' << z;
 	auto hash = hasher(ss.str());
 

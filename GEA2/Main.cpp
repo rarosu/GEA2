@@ -70,7 +70,12 @@ int main(int argc, char* argv[])
 	//Add files
 	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
 
-	chunkManager = new ChunkManager(&filesystem, &camera);
+	std::string vWorldPath;
+	std::cout << "Enter world virtual path(no ext): " << std::endl;
+	std::cin >> vWorldPath;
+	vWorldPath.append(".world");
+
+	chunkManager = new ChunkManager(&filesystem, &camera, vWorldPath);
 
 	//Initialize renderer
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);

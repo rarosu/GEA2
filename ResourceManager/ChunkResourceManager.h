@@ -22,7 +22,7 @@ class ChunkResourceManager
 {
 PUBLIC:
 
-	ChunkResourceManager(Filesystem* filesystem);
+	ChunkResourceManager(Filesystem* filesystem, const std::string& vWorldPath);
 	~ChunkResourceManager();
 
 	Resource<Chunk> Load(int x, int y, int z);
@@ -43,4 +43,6 @@ PRIVATE:
 	std::mutex mutex;
 	std::shared_ptr<File> file;
 	MetaWorldHeader globalFileHeader;
+
+	std::string currentVWorldPath;
 };

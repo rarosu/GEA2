@@ -33,7 +33,7 @@ public:
 	void Draw();
 
 	//Block list
-	uint8_t*** blockList;
+	uint8_t* blockList;
 
 	//Pointers to neighbour chunks, nullptr if no neighbour
 	Chunk* left;
@@ -58,4 +58,6 @@ private:
 	Mesh* chunkMesh;
 
 	const MetaWorldHeader& metaWorldHeader;
+
+	int GetBlockArrayIndex(int x, int y, int z);
 };

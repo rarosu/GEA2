@@ -10,7 +10,7 @@
 class ChunkManager
 {
 public:
-	ChunkManager(Filesystem* filesystem, Camera* pcamera);
+	ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath);
 	~ChunkManager();
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);

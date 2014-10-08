@@ -2,8 +2,8 @@
 #include <fstream>
 #include <iostream>
 
-ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
-	: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
+ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath)
+	: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem, vWorldPath), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
 {
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 }

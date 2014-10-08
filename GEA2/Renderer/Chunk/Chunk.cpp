@@ -8,28 +8,11 @@ Chunk::Chunk(const glm::vec3& worldPos, const MetaWorldHeader& metaHeader)
 	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr), metaWorldHeader(metaHeader)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
+
 	//Set all blocks in chunk to 0 (air), this causes the mesh generation to not create any vertices, see UpdateChunk() for deatails
-	char* mem = new char[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ * sizeof(uint8_t)];
-	uint8_t* ptr = (uint8_t*)mem;
-	blockList = new(ptr) uint8_t**[metaWorldHeader.CX];
-	for (int i = 0; i < metaWorldHeader.CX; i++)
-	{
-		ptr++;
-		blockList[i] = new(ptr) uint8_t*[metaWorldHeader.CY];
-		for (int j = 0; j < metaWorldHeader.CY; j++)
-		{
-			ptr++;;
-
-			blockList[i][j] = new(ptr)  uint8_t[metaWorldHeader.CZ];
-			for (int k = 0; k < metaWorldHeader.CZ; k++)
-			{
-				ptr++;
-
-				blockList[i][j][k] = 0;
-			}
-		}
-	}
-	//memset(blockList, 0, sizeof(uint8_t) * metaWorldHeader.metaWorldHeader.CX * metaWorldHeader.metaWorldHeader.CY * metaWorldHeader.metaWorldHeader.CZ);
+	blockList = new uint8_t[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ];
+	
+	memset(blockList, 0, sizeof(uint8_t) * metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ);
 }
 
 Chunk::~Chunk()
@@ -38,14 +21,6 @@ Chunk::~Chunk()
 	if (chunkMesh)
 		delete chunkMesh;
 
-	for (int i = 0; i < metaWorldHeader.CX; i++)
-	{
-		for (int j = 0; j < metaWorldHeader.CY; j++)
-		{
-			delete[] blockList[i][j];
-		}
-		delete[] blockList[i];
-	}
 	delete[] blockList;
 }
 
@@ -64,14 +39,14 @@ void Chunk::UpdateChunk()
 			for(uint8_t z = 0; z < metaWorldHeader.CZ; z++) 
 			{
 				// Empty block?
-				if(!blockList[x][y][z])
+				if (!blockList[GetBlockArrayIndex(x, y, z)])
 				{
 					vis = false;
 					continue;
 				}
 				
 				///Calculate correct UV mapped to atlas
-				uint8_t blockType = blockList[x][y][z];
+				uint8_t blockType = blockList[GetBlockArrayIndex(x, y, z)];
 
 				//UV coord size for a block side on the texture atlas
 				glm::vec2 blockUVSize = glm::vec2(1.0f / ATLASTEXTURES_X, 1.0f / ATLASTEXTURES_Y);
@@ -239,7 +214,7 @@ void Chunk::Set( int x, int y, int z, uint8_t type )
 	}
 
 	// Change the block
-	blockList[x][y][z] = type;
+	blockList[GetBlockArrayIndex(x, y, z)] = type;
 	changed = true;
 
 	// When updating blocks at the edge of this chunk,
@@ -261,18 +236,42 @@ void Chunk::Set( int x, int y, int z, uint8_t type )
 uint8_t Chunk::Get( int x, int y, int z )
 {
 	//Get block type at position, if outside of this chunk, get from neighbour
-	if(x < 0)
-		return left ? left->blockList[x + metaWorldHeader.CX][y][z] : 0;
-	if(x >= metaWorldHeader.CX)
-		return right ? right->blockList[x - metaWorldHeader.CX][y][z] : 0;
-	if(y < 0)
-		return below ? below->blockList[x][y + metaWorldHeader.CY][z] : 0;
+	int index = 0;
+	if (x < 0)
+	{
+		index = GetBlockArrayIndex(x + metaWorldHeader.CX, y, z);
+		return left ? left->blockList[index] : 0;
+	}
+	if (x >= metaWorldHeader.CX)
+	{
+		index = GetBlockArrayIndex(x - metaWorldHeader.CX, y, z);
+		return right ? right->blockList[index] : 0;
+	}
+	if (y < 0)
+	{
+		index = GetBlockArrayIndex(x, y + metaWorldHeader.CY, z);
+		return below ? below->blockList[index] : 0;
+	}
 	if(y >= metaWorldHeader.CY)
-		return above ? above->blockList[x][y - metaWorldHeader.CY][z] : 0;
-	if(z < 0)
-		return front ? front->blockList[x][y][z + metaWorldHeader.CZ] : 0;
-	if(z >= metaWorldHeader.CZ)
-		return back ? back->blockList[x][y][z - metaWorldHeader.CZ] : 0;
+	{
+		index = GetBlockArrayIndex(x, y - metaWorldHeader.CY, z);
+		return above ? above->blockList[index] : 0;
+	}
+	if (z < 0)
+	{
+		index = GetBlockArrayIndex(x, y, z + metaWorldHeader.CZ);
+		return front ? front->blockList[index] : 0;
+	}
+	if (z >= metaWorldHeader.CZ)
+	{
+		index = GetBlockArrayIndex(x, y, z - metaWorldHeader.CZ);
+		return back ? back->blockList[index] : 0;
+	}
 
-	return blockList[x][y][z];
+	return blockList[GetBlockArrayIndex(x, y, z)];
+}
+
+int Chunk::GetBlockArrayIndex(int x, int y, int z)
+{
+	return metaWorldHeader.CZ * metaWorldHeader.CY * x + metaWorldHeader.CZ * y + z;
 }
