@@ -2,12 +2,11 @@
 #include <fstream>
 #include <iostream>
 
-ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
-: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS)
+ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera)
+: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem, allocator), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS)
 {
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 }
-
 
 ChunkManager::~ChunkManager()
 {
