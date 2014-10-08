@@ -36,7 +36,8 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, const std::st
 	std::cout << "Chunks: x: " << global_header.SCX << " y: " << global_header.SCY << " z: " << global_header.SCZ << std::endl;
 	std::cout << "Blocks: x: " << global_header.CX << " y: " << global_header.CY << " z: " << global_header.CZ << std::endl;
 	std::cout << "Total chunks: " << global_header.SCX * global_header.SCY * global_header.SCZ << std::endl;
-	std::cout << "Total blocks: " << global_header.SCX * global_header.SCY * global_header.SCZ * global_header.CX * global_header.CY * global_header.CZ << std::endl;
+	unsigned int blocks = global_header.SCX * global_header.SCY * global_header.SCZ * global_header.CX * global_header.CY * global_header.CZ - 1;
+	std::cout << "Total blocks: " << blocks << std::endl;
 
 	header = new header_element[global_header.SCX * global_header.SCY * global_header.SCZ];
 	file->Read(header, global_header.header_size - sizeof(MetaWorldHeader));

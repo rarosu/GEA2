@@ -1,7 +1,7 @@
 #include "Renderer.h"
 
 Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height)
-	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(true)
+	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false)
 {
 	//Create chunk rendering shader program
 	shaderProgram.CreateProgram("../Assets/Shaders/Cube");

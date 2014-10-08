@@ -81,12 +81,13 @@ int main(int argc, char* argv[])
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Initialize camera
-	camera.SetLens(45.0f, 1.0f, 500.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 1.0f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Set up some anttweakbar bars
-	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(chunkManager->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");
+	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
+	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -127,7 +128,7 @@ int main(int argc, char* argv[])
 
 		//Render all the things!
 		renderer->Draw();
-
+		TwRefreshBar(antbar);
 		TwDraw();
 		SDL_GL_SwapWindow(window);
 	}
@@ -160,7 +161,7 @@ bool HandleEvents()
 					case SDLK_f:
 					{
 						chunkManager->DestroyBlock();
-						TwRefreshBar(antbar);
+						
 					}break;
 				}
 			} break;

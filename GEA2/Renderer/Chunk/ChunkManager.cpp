@@ -1,11 +1,13 @@
 #include "ChunkManager.h"
 #include <fstream>
 #include <iostream>
-
+#include <algorithm>
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath)
 	: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem, vWorldPath), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
 {
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
+	CHUNK_LOAD_DISTANCE = 16;
+	nrOfRenderedChunks = 0;
 }
 
 
@@ -15,9 +17,26 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Update(float dt)
 {
-	for (int x = 0; x < metaHeader.SCX; ++x)
-		for (int y = 0; y < metaHeader.SCY; ++y)	
-			for (int z = 0; z < metaHeader.SCZ; ++z)
+	//Get chunk position
+	int cx = camera->GetPosition().x / metaHeader.CX;
+	int cy = camera->GetPosition().y / metaHeader.CY;
+	int cz = camera->GetPosition().z / metaHeader.CZ;
+
+	//Get lower chunk iteration pos
+	int lowX = std::max(cx - (CHUNK_LOAD_DISTANCE + 1), 0);
+	int lowY = std::max(cy - (CHUNK_LOAD_DISTANCE + 1), 0);
+	int lowZ = std::max(cz - (CHUNK_LOAD_DISTANCE + 1), 0);
+
+	//Get upper chunk iteration pos
+	int highX = std::min(cx + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCX);
+	int highY = std::min(cy + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCY);
+	int highZ = std::min(cz + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCZ);
+
+	//looping over high and low creates a box around the camera containing possible loaded/unloaded chunks. Go through these and do load/unload logic. 
+	//(Previously we looped through 500k chunks in a 512x2x512 level, this approach takes it down to worst case ish (CHUNK_LOAD_DISTANCE*2)^3 and in the case of 512x2x512 the worst case is (CHUNK_LOAD_DISTANCE*2)^2 * 2)
+	for (int x = lowX; x < highX; ++x)
+		for (int y = lowY; y < highY; ++y)
+			for (int z = lowZ; z < highZ; ++z)
 			{
 				float dist = glm::distance(glm::vec3(x*metaHeader.CX, y*metaHeader.CY, z*metaHeader.CZ), camera->GetPosition());
 				if (dist < metaHeader.CX * CHUNK_LOAD_DISTANCE)
@@ -33,13 +52,25 @@ void ChunkManager::Update(float dt)
 
 void ChunkManager::Draw()
 {
+	nrOfRenderedChunks = 0;
 	for (auto chunk : drawList)
 	{
+		glm::mat4 WVP = camera->GetViewProjMatrix() * chunk->worldMatrix;
+		glm::vec4 center = WVP * glm::vec4(metaHeader.CX / 2, metaHeader.CY / 2, metaHeader.CZ / 2, 1);
+		center.x /= center.w;
+		center.y /= center.w;
+
+		if (center.z < -metaHeader.CZ / 2)
+			continue;
+		if (fabsf(center.x) > 1 + fabsf(metaHeader.CY * 2 / center.w) || fabsf(center.y) > 1 + fabsf(metaHeader.CY * 2 / center.w))
+			continue;
+
 		worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunk->worldMatrix);
 		glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
 
 		chunk->Draw();
-	}			
+		++nrOfRenderedChunks;
+	}	
 }
 
 uint8_t ChunkManager::Get(int x, int y, int z)
@@ -78,6 +109,16 @@ void ChunkManager::Set( int x, int y, int z, uint8_t type )
 
 		itmap->second->Set(x, y, z, type);
 	}
+}
+
+int& ChunkManager::GetNrOfRenderedChunks()
+{
+	return nrOfRenderedChunks;
+}
+
+int& ChunkManager::GetViewRadius()
+{
+	return CHUNK_LOAD_DISTANCE;
 }
 
 int& ChunkManager::GetNrOfBlocks()

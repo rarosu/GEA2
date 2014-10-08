@@ -21,8 +21,10 @@ public:
 	void RemoveChunk(int x, int y, int z);
 
 	int& GetNrOfBlocks();
+	int& GetViewRadius();
+	int& GetNrOfRenderedChunks();
 	int GetNrOfChunks();
-
+	
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
 	
@@ -30,10 +32,11 @@ public:
 
 private:
 
-	static const int CHUNK_LOAD_DISTANCE = 16;
-
+	
+	int CHUNK_LOAD_DISTANCE;
 	int nrOfChunks;
 	int nrOfBlocks;
+	int nrOfRenderedChunks;
 
 	Buffer worldMatBuf;
 
