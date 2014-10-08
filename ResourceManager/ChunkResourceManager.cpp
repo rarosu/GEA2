@@ -5,6 +5,11 @@
 ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
 {
 	this->filesystem = filesystem;
+	file = filesystem->GetFile("testtest.world");
+	
+	int header_size;
+	file->Read(&header_size, sizeof(int));
+	file->Read(header, header_size - sizeof(int));
 }
 ChunkResourceManager::~ChunkResourceManager()
 {
@@ -30,23 +35,9 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
 
 	{
-
-		std::shared_ptr<File> file = filesystem->GetFile("testtest.world");
-
 		if (file == nullptr)
 			return Resource<Chunk>();
 
-		struct header_element
-		{
-			int address;
-			int size;
-		};
-
-		header_element* header = new header_element[SCX * SCY * SCZ];
-
-		int header_size;
-		file->Read(&header_size, sizeof(int));
-		file->Read(header, header_size - sizeof(int));
 		int i = SCZ * SCY * x + SCZ * y + z;
 		uint8_t* compressed = new uint8_t[header[i].size];
 		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
@@ -56,7 +47,6 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		chunk->changed = true;
 
 		delete[] compressed;
-		delete[] header;
 
 		internal = chunks.AddResource(hash, chunk);
 		if (internal == nullptr)

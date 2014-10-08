@@ -31,6 +31,8 @@ public:
 	void DestroyBlock();
 
 private:
+	static const int CHUNK_LOAD_DISTANCE = 16;
+
 	Chunk* chunkList[SCX][SCY][SCZ];
 
 	int nrOfChunks;

@@ -18,8 +18,15 @@ PUBLIC:
 	Resource<Chunk> Load(int x, int y, int z);
 	void Destructor(InternalResource<Chunk>* internal);
 PRIVATE:
+	struct header_element
+	{
+		int address;
+		int size;
+	};
+
+	header_element header[SCX * SCY * SCZ];
 	ResourceContainer<Chunk> chunks;
 	Filesystem* filesystem;
 	std::mutex mutex;
-
+	std::shared_ptr<File> file;
 };
