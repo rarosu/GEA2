@@ -5,10 +5,35 @@
 ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem)
 {
 	this->filesystem = filesystem;
+	file = filesystem->GetFile("testtest.world");
+	
+	//Header format
+		//-header_global	- 0 bytes
+		//---header_size	- 0 bytes
+		//---SCX			- 4 bytes
+		//---SCY			- 8 bytes
+		//---SCZ			- 12 bytes
+		//---CX				- 16 bytes
+		//---CY				- 20 bytes
+		//---CZ				- 24 bytes
+		//-header_element	- 28 bytes
+		//		-
+		//		-
+		//		-
+		//-start of compressed data - header_global.header_size bytes
+	
+
+	//Read global header data!
+	header_global global_header;
+	file->Read(&global_header, sizeof(header_global));
+	globalFileHeader = global_header;
+
+	header_element* header = new header_element[global_header.SCX * global_header.SCY * global_header.SCZ];
+	file->Read(header, global_header.header_size - sizeof(header_global));
 }
 ChunkResourceManager::~ChunkResourceManager()
 {
-
+	delete[] header_element;
 }
 
 void ChunkResourceManager::Destructor(InternalResource<Chunk>* internal)
@@ -30,9 +55,6 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
 
 	{
-
-		std::shared_ptr<File> file = filesystem->GetFile("testtest.world");
-
 		if (file == nullptr)
 			return Resource<Chunk>();
 
@@ -42,40 +64,7 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 			int size;
 		};
 
-		struct header_global
-		{
-			int header_size;
-			int SCX;
-			int SCY;
-			int SCZ;
-			int CX;
-			int CY;
-			int CZ;
-		};
-
-		//Header format
-		//-header_global	- 0 bytes
-		//---header_size	- 0 bytes
-		//---SCX			- 4 bytes
-		//---SCY			- 8 bytes
-		//---SCZ			- 12 bytes
-		//---CX				- 16 bytes
-		//---CY				- 20 bytes
-		//---CZ				- 24 bytes
-		//-header_element	- 28 bytes
-		//		-
-		//		-
-		//		-
-		//-start of compressed data - header_global.header_size bytes
-		
-		//Read global header data!
-		header_global global_header;
-		file->Read(&global_header, sizeof(header_global));
-		//Read header elements
-		header_element* header = new header_element[SCX * SCY * SCZ];
-		file->Read(header, global_header.header_size - sizeof(header_global));
-
-		int i = SCZ * SCY * x + SCZ * y + z;
+		int i = globalFileHeader.SCZ * globalFileHeader.SCY * x + globalFileHeader.SCZ * y + z;
 
 		//Create array, seek to chunk in file, read compressed data to mem
 		uint8_t* compressed = new uint8_t[header[i].size];
@@ -83,12 +72,11 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		file->Read(compressed, header[i].size);
 
 		//Create a chunk and uncompress data, set chunk to changed
-		Chunk* chunk = new Chunk(glm::vec3(x * CX, y * CY, z * CZ));
+		Chunk* chunk = new Chunk(glm::vec3(x * globalFileHeader.CX, y * globalFileHeader.CY, z * globalFileHeader.CZ));
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
 		chunk->changed = true;
 
 		delete[] compressed;
-		delete[] header;
 
 		internal = chunks.AddResource(hash, chunk);
 		if (internal == nullptr)

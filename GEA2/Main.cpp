@@ -76,7 +76,7 @@ int main(int argc, char* argv[])
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Initialize camera
-	camera.SetLens(45.0f, 0.01f, 500.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 1.0f, 500.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Set up some anttweakbar bars
 	TwAddVarRO(antbar, "Test", TW_TYPE_INT32, &(chunkManager->GetNrOfBlocks()), " label='Number of cubes' min=0 max=2000000000 help='Displays the number of cubes in the scene.' ");

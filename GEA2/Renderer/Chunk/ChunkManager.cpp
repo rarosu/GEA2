@@ -21,7 +21,7 @@ void ChunkManager::Update(float dt)
 			for (int z = 0; z < SCZ; ++z)
 			{
 				float dist = glm::distance(glm::vec3(x*CX, y*CY, z*CZ), camera->GetPosition());
-				if (dist < 16 * 20)
+				if (dist < CX * CHUNK_LOAD_DISTANCE)
 				{
 					AddChunk(x, y, z);
 				}

@@ -31,6 +31,8 @@ public:
 	const int SCZ;
 private:
 
+	static const int CHUNK_LOAD_DISTANCE = 16;
+
 	int nrOfChunks;
 	int nrOfBlocks;
 
