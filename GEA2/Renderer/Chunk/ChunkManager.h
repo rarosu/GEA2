@@ -7,10 +7,6 @@
 #include <ChunkResourceManager.h>
 #include <map>
 
-#define SCX 256
-#define SCY 2
-#define SCZ 256
-
 class ChunkManager
 {
 public:
@@ -30,8 +26,10 @@ public:
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
 
+	const int SCX;
+	const int SCY;
+	const int SCZ;
 private:
-	Chunk* chunkList[SCX][SCY][SCZ];
 
 	int nrOfChunks;
 	int nrOfBlocks;

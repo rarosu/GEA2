@@ -5,6 +5,7 @@
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera)
 : worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem), camera(pcamera)
 {
+	//hej hur stor är världen
 	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 }
 

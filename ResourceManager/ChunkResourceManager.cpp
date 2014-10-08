@@ -42,15 +42,47 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 			int size;
 		};
 
-		header_element* header = new header_element[SCX * SCY * SCZ];
+		struct header_global
+		{
+			int header_size;
+			int SCX;
+			int SCY;
+			int SCZ;
+			int CX;
+			int CY;
+			int CZ;
+		};
 
-		int header_size;
-		file->Read(&header_size, sizeof(int));
-		file->Read(header, header_size - sizeof(int));
+		//Header format
+		//-header_global	- 0 bytes
+		//---header_size	- 0 bytes
+		//---SCX			- 4 bytes
+		//---SCY			- 8 bytes
+		//---SCZ			- 12 bytes
+		//---CX				- 16 bytes
+		//---CY				- 20 bytes
+		//---CZ				- 24 bytes
+		//-header_element	- 28 bytes
+		//		-
+		//		-
+		//		-
+		//-start of compressed data - header_global.header_size bytes
+		
+		//Read global header data!
+		header_global global_header;
+		file->Read(&global_header, sizeof(header_global));
+		//Read header elements
+		header_element* header = new header_element[SCX * SCY * SCZ];
+		file->Read(header, global_header.header_size - sizeof(header_global));
+
 		int i = SCZ * SCY * x + SCZ * y + z;
+
+		//Create array, seek to chunk in file, read compressed data to mem
 		uint8_t* compressed = new uint8_t[header[i].size];
 		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
 		file->Read(compressed, header[i].size);
+
+		//Create a chunk and uncompress data, set chunk to changed
 		Chunk* chunk = new Chunk(glm::vec3(x * CX, y * CY, z * CZ));
 		RLE_Uncompress(compressed, (unsigned char*)chunk->blockList, header[i].size);
 		chunk->changed = true;

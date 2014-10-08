@@ -168,20 +168,63 @@ int Export(const char* fileName)
 		int size;
 	};
 
+	struct header_global
+	{
+		int header_size;
+		int SCX;
+		int SCY;
+		int SCZ;
+		int CX;
+		int CY;
+		int CZ;
+	};
+
+	//Header format
+	//-header_global	- 0 bytes
+	//---header_size	- 0 bytes
+	//---SCX			- 4 bytes
+	//---SCY			- 8 bytes
+	//---SCZ			- 12 bytes
+	//---CX				- 16 bytes
+	//---CY				- 20 bytes
+	//---CZ				- 24 bytes
+	//-header_element	- 28 bytes
+	//		-
+	//		-
+	//		-
+	//-start of compressed data - header_global.header_size bytes
+	
 	int numberOfBlocksPerChunk = CX * CY * CZ;
 	int numberOfChunks = SCX * SCY * SCZ;
-	int header_size = numberOfChunks * sizeof(header_element) + sizeof(int);
-	int compressedSize = SCX * SCY * SCZ * 8 + 4; //Used as statistic, begin with header size. Return value.
+
+	//Set up the global header
+	header_global global_header;
+	global_header.header_size = numberOfChunks * sizeof(header_element) + sizeof(header_global);
+	global_header.SCX = SCX;
+	global_header.SCY = SCY;
+	global_header.SCZ = SCZ;
+	global_header.CX = CX;
+	global_header.CY = CY;
+	global_header.CZ = CZ;
+
+	int compressedSize = global_header.header_size; //Log compressed size in loop below as stats. begin with header size. Return this value from method.
+
 	int percentChunk = numberOfChunks / 100; //1% of chunks
 
+	//Create header element array and set to 0
 	header_element* header = new header_element[numberOfChunks];
-	memset(header, 0, header_size - sizeof(int));
+	memset(header, 0, global_header.header_size - sizeof(header_global));
+
+	//Set up out file stream
 	std::ofstream s;
 	s.open(fileName, std::ios_base::binary);
 
-	s.write((char*)&header_size, sizeof(int));
-	s.write((char*)header, header_size - sizeof(int));
+	//Write the complete header_global
+	s.write((char*)&global_header, sizeof(header_global));
+	//Write empty header element data to reserve this space
+	s.write((char*)header, global_header.header_size - sizeof(header_global));
 
+	//In and out data for RLE compression
 	unsigned char* chunkData = new unsigned char[numberOfBlocksPerChunk];
 	unsigned char* compressed = new unsigned char[numberOfBlocksPerChunk];
 
@@ -192,30 +235,40 @@ int Export(const char* fileName)
 		{
 			for (int z = 0; z < SCZ; ++z)
 			{
+				//Reset all blocks in chunk to 0 (=air)
 				memset(chunkData, 0, numberOfBlocksPerChunk);
-				memset(compressed, 0, numberOfBlocksPerChunk);
 
 				//Generate chunkdata into array for compression
 				Generate(x, y, z, chunkData);
 
-				
+				//Compress!
 				header[i].size = RLE_Compress(chunkData, compressed, numberOfBlocksPerChunk);
+				
+				//Log compressed size for stats
 				compressedSize += header[i].size;
+				
+				//Write compressed chunk to file
 				s.write((char*)compressed, header[i].size);
-
-				int address = (i != 0) ? header[i - 1].adress + header[i - 1].size : header_size;
+				
+				//Calculate the address of this chunk!
+				//If first chunk, get "previous" address as the end of header data, that't where the chunk data begins!
+				int address = (i != 0) ? header[i - 1].adress + header[i - 1].size : global_header.header_size;
 				header[i].adress = address;
 
+				//Counter to walk in the header array.
 				++i;
 				
+				//Percent calc and print
 				if (i % percentChunk == 0)
-					std::cout << "Progress: " << (int)(((float)i / (float)numberOfChunks) * 100.0f) << "%" << std::endl;
+					std::cout << "Progress: " << (int)(((float)i / (float)numberOfChunks) * 100.0f) + 1 << "%" << std::endl;
 			}
 		}
 	}
 
-	s.seekp(std::ios_base::beg + sizeof(int));
-	s.write((char*)header, header_size - sizeof(int));
+	//Seek to the end of the global header to write all the header elements
+	s.seekp(std::ios_base::beg + sizeof(header_global));
+	//Write header element data
+	s.write((char*)header, global_header.header_size - sizeof(header_global));
 
 	s.flush();
 	s.close();

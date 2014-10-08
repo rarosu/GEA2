@@ -6,9 +6,7 @@
 #include "../GEA2/Renderer/Chunk/Chunk.h"
 
 #include <mutex>
-#define SCX 256
-#define SCY 2
-#define SCZ 256
+
 class ChunkResourceManager
 {
 PUBLIC:
