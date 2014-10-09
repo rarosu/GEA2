@@ -60,7 +60,7 @@ int main(int argc, char* argv[])
 	glEnable(GL_DEPTH_TEST);
 	glCullFace(GL_BACK);	
 	glFrontFace(GL_CCW);
-
+	glDepthRange(-1, 1);
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
 	TwInit(TW_OPENGL_CORE, NULL);
@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Initialize camera
-	camera.SetLens(45.0f, 1.0f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 0.1f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Set up some anttweakbar bars
 	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");

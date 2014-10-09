@@ -25,6 +25,8 @@ void Camera::Update()
 void Camera::SetLens(float fov, float nearPlane, float farPlane, int width, int height)
 {
 	projectionMatrix = glm::perspectiveFov<float>(fov, (float)width, (float)height, nearPlane, farPlane);
+	projectionMatrix[2][2] = nearPlane / (nearPlane - farPlane);
+	projectionMatrix[3][2] = (nearPlane*farPlane) / (nearPlane - farPlane);
 }
 
 void Camera::SetPosition(const glm::vec3& pos)

@@ -11,29 +11,85 @@ int Export(const char* fileName);
 
 int main(int argc, char* argv[])
 {
-	std::cout << "World Generator v1.0!\nEnter desired file name(no extension):" << std::endl;
-
+	std::cout << "World Generator v1.0!" << std::endl;
 	std::string filename;
-	std::cin >> filename;
+	while (1)
+	{
+		std::cout << "Enter desired file name(no extension):" << std::endl;
+		std::cin >> filename;
+
+		//Error checking
+		if (std::cin.fail() || filename.length() == 0)
+		{
+			std::cin.clear();
+			std::cin.ignore();
+			std::cout << "WROOOONG!" << std::endl;
+			continue;
+		}
+
+		break;
+	}
+
+	while (1)
+	{
+		std::cout << "Enter number of chunks: x y z" << std::endl;
+		std::cin >> SCX >> SCY >> SCZ;
+
+		//Error checking
+		if (std::cin.fail() || !SCX || !SCY || !SCZ)
+		{
+			std::cin.clear();
+			std::cin.ignore();
+			std::cout << "WROOOONG!" << std::endl;
+			continue;
+		}
+
+		break;
+	}
+
+	while (1)
+	{
+		std::cout << "Enter number of blocks per chunk: x y z" << std::endl;
+		std::cin >> CX >> CY >> CZ;
+
+		//Error checking
+		if (std::cin.fail() || !CX || !CY || !CZ)
+		{
+			std::cin.clear();
+			std::cin.ignore();
+			std::cout << "WROOOONG!" << std::endl;
+			continue;
+		}
 	
-	std::cout << "Enter number of chunks: x y z" << std::endl;
-	std::cin >> SCX >> SCY >> SCZ;
+		break;
+	}
 
-	std::cout << "Enter number of blocks per chunk: x y z" << std::endl;
-	std::cin >> CX >> CY >> CZ;
+	while (1)
+	{
+		std::cout << "Enter water level(in blocks): h" << std::endl;
+		std::cin >> SEALEVEL;
 
-	std::cout << "Enter water level(in blocks): h" << std::endl;
-	std::cin >> SEALEVEL;
+		//Error checking
+		if (std::cin.fail() || SEALEVEL < 0 || SEALEVEL >= CY)
+		{
+			std::cin.clear();
+			std::cin.ignore();
+			std::cout << "WROOOONG!" << std::endl;
+			continue;
+		}
+
+		break;
+	}
 
 	int compressedSize = Export(filename.c_str());
 
-	std::cout << "World name		: " << filename << std::endl;
-	std::cout << "#Chunks			: " << SCX * SCY * SCZ << std::endl;
-	std::cout << "#Chunks/block		: " << CX * CY * CZ << std::endl;
-	std::cout << "#Total blocks		: " << CX * CY * CZ * SCX * SCY * SCZ << std::endl;
-	std::cout << "Uncompressed size	: " << SCX * SCY * SCZ * 8 + 4 + CX * CY * CZ * SCX * SCY * SCZ << std::endl;
-	std::cout << "Compressed size	: " << compressedSize << std::endl;
-
+	std::cout << "World name        : " << filename << std::endl;
+	std::cout << "#Chunks           : " << SCX * SCY * SCZ << std::endl;
+	std::cout << "#Chunks/block     : " << CX * CY * CZ << std::endl;
+	std::cout << "#Total blocks     : " << CX * CY * CZ * SCX * SCY * SCZ << std::endl;
+	std::cout << "Uncompressed size : " << SCX * SCY * SCZ * 8 + 4 + CX * CY * CZ * SCX * SCY * SCZ << std::endl;
+	std::cout << "Compressed size   : " << compressedSize << std::endl;
+	std::cout << "Size ratio        : " << (float)compressedSize / (float)(SCX * SCY * SCZ * 8 + 4 + CX * CY * CZ * SCX * SCY * SCZ) << std::endl;
 	std::cin.get();
 }
 
@@ -114,12 +170,12 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 					else
 					{
 						// A tree!
-					/*	if (Get(x, y - 1, z) == 1 && (rand() % 200) == 0)
+						if (Get(x, y - 1, z, blockData) == 1 && (rand() % 200) == 0)
 						{
 							// Trunk
 							h = (rand() & 0x3) + 3;
 							for (int i = 0; i < h; i++)
-								Set(x, y + i, z, 5);
+								Set(x, y + i, z, 5, blockData);
 
 							// Leaves
 							for (int ix = -3; ix <= 3; ix++)
@@ -128,12 +184,12 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 								{
 									for (int iz = -3; iz <= 3; iz++)
 									{
-										if (ix * ix + iy * iy + iz * iz < 8 + (rand() & 1) && !Get(x + ix, y + h + iy, z + iz))
-											Set(x + ix, y + h + iy, z + iz, 4);
+										if (ix * ix + iy * iy + iz * iz < 8 + (rand() & 1) && !Get(x + ix, y + h + iy, z + iz, blockData))
+											Set(x + ix, y + h + iy, z + iz, 4, blockData);
 									}
 								}
 							}
-						}*/
+						}
 						break;
 					}
 				}
@@ -217,7 +273,11 @@ int Export(const char* fileName)
 
 	//Set up out file stream
 	std::ofstream s;
-	s.open(fileName, std::ios_base::binary);
+	std::string assetWorldPath = "../Assets/Worlds/";
+	assetWorldPath.append(fileName);
+	assetWorldPath.append(".world");
+
+	s.open(assetWorldPath, std::ios_base::binary);
 
 	//Write the complete header_global
 	s.write((char*)&global_header, sizeof(header_global));
