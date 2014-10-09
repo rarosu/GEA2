@@ -1,7 +1,7 @@
 #pragma once
 #include <glew.h>
 
-#define GBUFFER_NUM_TEXTURES 2
+#define GBUFFER_NUM_TEXTURES 3
 
 class GBuffer
 {
@@ -11,6 +11,7 @@ public:
 	{
 		GBUFFER_TEXTURE_COLOR,
 		GBUFFER_TEXTURE_NORMALS,
+		GBUFFER_TEXTURE_POSITION
 	};
 
 	GBuffer();

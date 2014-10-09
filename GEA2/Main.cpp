@@ -81,7 +81,7 @@ int main(int argc, char* argv[])
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Initialize camera
-	camera.SetLens(45.0f, 0.1f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
+	camera.SetLens(45.0f, 0.5f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	//Set up some anttweakbar bars
 	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");

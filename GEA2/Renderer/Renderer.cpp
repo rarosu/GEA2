@@ -56,12 +56,9 @@ void Renderer::Draw()
 	chunkManager->Draw();
 	texture.Unbind(0);
 
-	//TODO: blur SSAO
 	//TODO: maybe run a light pass on compute shader with lights in storage buffers?
 	//      Could use storagebuffer .length function to have a dynamic vector of lights
 
-	//Output gbuffer color to fullscreen quad
-	
 	gbuffer.BindTextures();
 
 	if (SSAOEnabled)
@@ -77,12 +74,12 @@ void Renderer::Draw()
 
 	if (SSAOEnabled)
 	{
-		ssao.BindTexForRead(3);
+		ssao.BindTexForRead(4);
 		outputWithSSAOBlur.Use();
 	}
 	else
 		output.Use();
-
+	//Output gbuffer color to fullscreen quad
 	fullscreenquad.Draw();
 	ssao.BindTexForRead(3);
 	gbuffer.UnbindTextures();

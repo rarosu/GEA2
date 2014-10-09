@@ -6,8 +6,8 @@ out vec4 color;
 
 layout(binding = 0) uniform sampler2D diffuseTex;
 layout(binding = 1) uniform sampler2D normalTex;
-layout(binding = 2) uniform sampler2D depthTex;
-layout(binding = 3) uniform sampler2D ssao;
+layout(binding = 3) uniform sampler2D depthTex;
+layout(binding = 4) uniform sampler2D ssao;
 
 const int blurSize = 16;
 
