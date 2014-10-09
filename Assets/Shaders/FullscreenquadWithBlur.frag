@@ -18,7 +18,7 @@ void main()
 	 //depth = LinearizeDepth(depth)*3;
 	// color = vec4(depth, depth, depth, 1)/10;
 	//color = texture(normalTex, out_texc);
-/*
+
 	vec2 texelSize = 1.0 / vec2(textureSize(ssao, 0));
 	float result = 0.0;
 	vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);
@@ -32,6 +32,6 @@ void main()
 	}
  
 	result = result / float(blurSize * blurSize);
-*/
-	color = texture(diffuseTex, out_texc) * texture(ssao, out_texc).r;//* result;
+
+	color = texture(diffuseTex, out_texc) * result;
 }

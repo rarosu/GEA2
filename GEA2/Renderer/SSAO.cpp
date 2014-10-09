@@ -80,7 +80,7 @@ void SSAO::Bind()
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0};
 	glDrawBuffers(1, drawBuffers);
 
-	glActiveTexture(GL_TEXTURE0 + 3);
+	glActiveTexture(GL_TEXTURE0 + 4);
 	glBindTexture(GL_TEXTURE_2D, noiseTexture);
 
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, kernelBuffer.GetBufferId());
@@ -89,7 +89,7 @@ void SSAO::Bind()
 void SSAO::Unbind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	glActiveTexture(GL_TEXTURE0 + 3);
+	glActiveTexture(GL_TEXTURE0 + 4);
 	glBindTexture(GL_TEXTURE_2D, 0);
 	glDepthMask(GL_TRUE);
 	glEnable(GL_DEPTH_TEST);

@@ -58,6 +58,6 @@ private:
 	Mesh* chunkMesh;
 
 	const MetaWorldHeader& metaWorldHeader;
-
+	glm::vec4 worldP;
 	int GetBlockArrayIndex(int x, int y, int z);
 };

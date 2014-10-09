@@ -54,7 +54,7 @@ int main(int argc, char* argv[])
 	glewInit();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-	glClearColor(135.0f/255.0f, 206.0f/255.0f, 250.0f/255.0f, 0); // some blue clear color as sky
+	glClearColor(135.0f/255.0f, 206.0f/255.0f, 1.0f, 0); // some blue clear color as sky
 	glEnable(GL_CULL_FACE);
 	glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 	glEnable(GL_DEPTH_TEST);

@@ -117,3 +117,8 @@ void GBuffer::UnbindTextures()
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+GLuint& GBuffer::GetDepthTexture()
+{
+	return depthTexture;
+}
+

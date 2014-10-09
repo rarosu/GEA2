@@ -22,6 +22,7 @@ public:
 	void Bind();
 	void BindTextures();
 	void UnbindTextures();
+	GLuint& GetDepthTexture();
 
 private:
 

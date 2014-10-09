@@ -3,9 +3,8 @@
 #include <iostream>
 #include <algorithm>
 ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath)
-	: worldMatBuf(GL_UNIFORM_BUFFER), chunkResManager(filesystem, vWorldPath), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
+	: chunkResManager(filesystem, vWorldPath), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
 {
-	worldMatBuf.BufferData(1, sizeof(glm::mat4), 0, GL_DYNAMIC_DRAW);
 	CHUNK_LOAD_DISTANCE = 16;
 	nrOfRenderedChunks = 0;
 }
@@ -64,9 +63,6 @@ void ChunkManager::Draw()
 			continue;
 		if (fabsf(center.x) > 1 + fabsf(metaHeader.CY * 2 / center.w) || fabsf(center.y) > 1 + fabsf(metaHeader.CY * 2 / center.w))
 			continue;
-
-		worldMatBuf.BufferSubData(0, sizeof(glm::mat4), &chunk->worldMatrix);
-		glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
 
 		chunk->Draw();
 		++nrOfRenderedChunks;

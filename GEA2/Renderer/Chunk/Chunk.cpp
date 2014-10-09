@@ -8,7 +8,8 @@ Chunk::Chunk(const glm::vec3& worldPos, const MetaWorldHeader& metaHeader)
 	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr), metaWorldHeader(metaHeader)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
-
+	//Calculate world position only when chunk is created, no need for world matrix! WOOOO!
+	worldP = glm::vec4(worldPos.x , worldPos.y, worldPos.z , 0.0f);
 	//Set all blocks in chunk to 0 (air), this causes the mesh generation to not create any vertices, see UpdateChunk() for deatails
 	blockList = new uint8_t[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ];
 	
@@ -74,68 +75,68 @@ void Chunk::UpdateChunk()
 				if(!Get(x - 1, y, z))
 				{
 					
-					glm::vec3 normal(-1, 0, 0);
-					renderList.push_back(Vertex(glm::vec4(x,     y,     z,		blockType), normal, glm::vec2(x0, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x,     y,     z + 1,	blockType), normal, glm::vec2(x1, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z,		blockType), normal, glm::vec2(x0, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z,		blockType), normal, glm::vec2(x0, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x,     y,     z + 1,	blockType), normal, glm::vec2(x1, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z + 1,	blockType), normal, glm::vec2(x1, ys0)));		
+					glm::vec3 normal(-1, 0, 0);					//add world position here instead of world matrix multiplication for every vertex every frame
+					renderList.push_back(Vertex(glm::vec4(x,     y,     z,		blockType) + worldP, normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,     y,     z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z,		blockType) + worldP, normal, glm::vec2(x0, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z,		blockType) + worldP, normal, glm::vec2(x0, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x,     y,     z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,     y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys0)));		
 				} 
 				// View from positive x
 				if(!Get(x + 1, y, z))
 				{
 					glm::vec3 normal(1, 0, 0);
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType), normal, glm::vec2(x1, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType), normal, glm::vec2(x0, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType), normal, glm::vec2(x0, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType), normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType) + worldP, normal, glm::vec2(x1, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys1)));
 				}
 				// View from negative y
 				if(!Get(x, y-1, z))
 				{
 					glm::vec3 normal(0, -1, 0);
-					renderList.push_back(Vertex(glm::vec4(x,	 y, z,			blockType), normal, glm::vec2(x1, yb1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y, z,			blockType), normal, glm::vec2(x0, yb1)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y, z + 1,		blockType), normal, glm::vec2(x1, yb0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y, z,			blockType), normal, glm::vec2(x0, yb1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y, z + 1,		blockType), normal, glm::vec2(x0, yb0)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y, z + 1,		blockType), normal, glm::vec2(x1, yb0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y, z,			blockType) + worldP, normal, glm::vec2(x1, yb1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y, z,			blockType) + worldP, normal, glm::vec2(x0, yb1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y, z + 1,		blockType) + worldP, normal, glm::vec2(x1, yb0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y, z,			blockType) + worldP, normal, glm::vec2(x0, yb1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y, z + 1,		blockType) + worldP, normal, glm::vec2(x0, yb0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y, z + 1,		blockType) + worldP, normal, glm::vec2(x1, yb0)));
 				}
 				// View from positive y
 				if(!Get(x,y+1,z))
 				{
 					glm::vec3 normal(0, 1, 0);
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z + 1,	blockType), normal, glm::vec2(x1, y0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType), normal, glm::vec2(x0, y0)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType), normal, glm::vec2(x1, y1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType), normal, glm::vec2(x0, y0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType), normal, glm::vec2(x0, y1)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType), normal, glm::vec2(x1, y1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x1, y0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x0, y0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, y1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x0, y0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType) + worldP, normal, glm::vec2(x0, y1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, y1)));
 				}
 				// View from negative z
 				if(!Get(x, y, z - 1))
 				{
 					glm::vec3 normal(0, 0, -1);
-					renderList.push_back(Vertex(glm::vec4(x,	 y,		z,		blockType), normal, glm::vec2(x1, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType), normal, glm::vec2(x0, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType), normal, glm::vec2(x0, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType), normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y,		z,		blockType) + worldP, normal, glm::vec2(x1, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType) + worldP, normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z,		blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z,		blockType) + worldP, normal, glm::vec2(x0, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z,		blockType) + worldP, normal, glm::vec2(x0, ys1)));
 				}
 				// View from positive z
 				if(!Get(x, y, z + 1))
 				{
 					glm::vec3 normal(0, 0, 1);
-					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType), normal, glm::vec2(x1, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y,		z + 1,	blockType), normal, glm::vec2(x0, ys1)));
-					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType), normal, glm::vec2(x1, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z + 1,	blockType), normal, glm::vec2(x0, ys0)));
-					renderList.push_back(Vertex(glm::vec4(x,	 y,		z + 1,	blockType), normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y,		z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y,		z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys1)));
+					renderList.push_back(Vertex(glm::vec4(x + 1, y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x1, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y + 1, z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys0)));
+					renderList.push_back(Vertex(glm::vec4(x,	 y,		z + 1,	blockType) + worldP, normal, glm::vec2(x0, ys1)));
 				}
 			}
 		}

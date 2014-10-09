@@ -19,14 +19,9 @@ layout(binding = 0, std140) uniform PerFrame
 	mat4 invprojMatrix;
 };
 
-layout(binding = 1, std140) uniform PerObject
-{
-	mat4 worldMatrix;
-};
-
 void main () 
 {
-	vec4 position = viewMatrix * worldMatrix * vec4(in_pos.xyz, 1.0);
+	vec4 position = viewMatrix * vec4(in_pos.xyz, 1.0);
 	out_texc = in_texC;
 	out_normV = vec3(viewMatrix * vec4(in_norm, 0));
 	out_shade = clamp(max(dot(in_norm, normalize(g_dirToSunWorld)), 0.0) + 0.3, 0.0, 1.0);

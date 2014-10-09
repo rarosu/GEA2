@@ -38,8 +38,6 @@ private:
 	int nrOfBlocks;
 	int nrOfRenderedChunks;
 
-	Buffer worldMatBuf;
-
 	ChunkResourceManager chunkResManager;
 
 	std::vector<Resource<Chunk>> drawList;
