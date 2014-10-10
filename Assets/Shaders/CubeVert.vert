@@ -17,6 +17,7 @@ layout(binding = 0, std140) uniform PerFrame
 	mat4 projMatrix;
 	mat4 invviewMatrix;
 	mat4 invprojMatrix;
+	vec3 camPos;
 };
 
 void main () 

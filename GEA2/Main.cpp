@@ -1,3 +1,4 @@
+//3.4k LOC
 #include <iostream>
 #include <SDL.h>
 #include <glm.hpp>
@@ -123,7 +124,7 @@ int main(int argc, char* argv[])
 
 		//Update camera matrices
 		camera.Update();
-
+		renderer->Update(dt);
 		chunkManager->Update(dt);
 
 		//Render all the things!

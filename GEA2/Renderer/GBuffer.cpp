@@ -44,7 +44,7 @@ bool GBuffer::Init(unsigned windowWidth, unsigned windowHeight)
 	glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, windowWidth, windowHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 	glDrawBuffers(GBUFFER_NUM_TEXTURES, drawBuffers);
 
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
@@ -63,8 +63,22 @@ bool GBuffer::Init(unsigned windowWidth, unsigned windowHeight)
 void GBuffer::Bind()
 {
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2 };
+
+	for (int i = 0; i < GBUFFER_NUM_TEXTURES; ++i)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, textures[i], 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
+
+	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1, GL_COLOR_ATTACHMENT2, GL_COLOR_ATTACHMENT3 };
 	glDrawBuffers(GBUFFER_NUM_TEXTURES, drawBuffers);
+}
+
+void GBuffer::Unbind()
+{
+	for (int i = 0; i < GBUFFER_NUM_TEXTURES; ++i)
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, 0, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, 0, 0);
+
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 void GBuffer::Resize(unsigned windowWidth, unsigned windowHeight)
@@ -93,32 +107,29 @@ void GBuffer::Resize(unsigned windowWidth, unsigned windowHeight)
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture, 0);
 }
 
-void GBuffer::BindTextures()
+void GBuffer::BindTexture(GBUFFER_TEXTURE tex)
 {
-	for (unsigned i = 0; i < GBUFFER_NUM_TEXTURES; ++i)
+	if (tex == GBUFFER_TEXTURE_DEPTH)
 	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, textures[i]);
+		glActiveTexture(GL_TEXTURE0 + tex);
+		glBindTexture(GL_TEXTURE_2D, depthTexture);
 	}
-	glActiveTexture(GL_TEXTURE0 + GBUFFER_NUM_TEXTURES);
-	glBindTexture(GL_TEXTURE_2D, depthTexture);
+	else
+	{
+		glActiveTexture(GL_TEXTURE0 + tex);
+		glBindTexture(GL_TEXTURE_2D, textures[tex]);
+	}
+	
 }
 
-void GBuffer::UnbindTextures()
+void GBuffer::UnbindTexture(GBUFFER_TEXTURE tex)
 {
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	for (unsigned i = 0; i < GBUFFER_NUM_TEXTURES; ++i)
-	{
-		glActiveTexture(GL_TEXTURE0 + i);
-		glBindTexture(GL_TEXTURE_2D, 0);
-	}
-	glActiveTexture(GL_TEXTURE0 + GBUFFER_NUM_TEXTURES);
+	glActiveTexture(GL_TEXTURE0 + tex);
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-GLuint& GBuffer::GetDepthTexture()
+GLuint& GBuffer::GetTextureHandle(GBUFFER_TEXTURE tex)
 {
-	return depthTexture;
+	return textures[tex];
 }
 

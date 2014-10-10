@@ -13,6 +13,7 @@ public:
 		glm::mat4 proj;
 		glm::mat4 invview;
 		glm::mat4 invproj;
+		glm::vec3 campos;
 	};
 
 	Camera();

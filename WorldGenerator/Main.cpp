@@ -117,7 +117,7 @@ static float noise2d(float x, float y, int octaves, float persistence) {
 
 	for (int i = 0; i < octaves; i++)
 	{
-		sum += strength * glm::simplex<float>(glm::vec2(x, y)) * scale;
+		sum += strength * glm::simplex<float>(glm::vec2(x, y)) * scale + 8;
 		scale *= 2.0;
 		strength *= persistence;
 	}
@@ -150,7 +150,7 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 		for (int z = 0; z < CZ; z++)
 		{
 			// Land height, get the height at a specific X,Z coord
-			float n = noise2d((x + ax * CX) / 256.0f, (z + az * CZ) / 256.0f, 5, 0.8f) * 2;
+			float n = noise2d((x + ax * CX) / 256.0f, (z + az * CZ) / 256.0f, 5, 0.8f) - 26;
 			int h = (int)(n * 2);
 			int y = 0;
 
@@ -193,10 +193,14 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 						break;
 					}
 				}
-
+				if (y + ay * CY < 11)
+				{
+					Set(x, y, z, 3, blockData);
+					continue;
+				}
 				// Random value used to determine land type
 				float r = noise3d_abs((x + ax * CX) / 16.0f, (y + ay * CY) / 16.0f, (z + az * CZ) / 16.0f, 2, 1);
-				r -= 0.5f; // Rescale r value to allow for more sand 
+				r -= 1.0f; // Rescale r value to allow for more sand 
 				// Sand layer
 				if (n + r * 5 < 4)
 					Set(x, y, z, 3, blockData);

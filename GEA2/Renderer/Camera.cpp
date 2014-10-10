@@ -20,6 +20,7 @@ void Camera::Update()
 	camStruct.proj = projectionMatrix;
 	camStruct.invview = glm::inverse(viewMatrix);
 	camStruct.invproj = glm::inverse(projectionMatrix);
+	camStruct.campos = position;
 }
 
 void Camera::SetLens(float fov, float nearPlane, float farPlane, int width, int height)

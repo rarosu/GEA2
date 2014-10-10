@@ -4,7 +4,7 @@ Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, 
 	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false)
 {
 	//Create chunk rendering shader program
-	shaderProgram.CreateProgram("../Assets/Shaders/Cube");
+	chunkProgram.CreateProgram("../Assets/Shaders/Cube");
 	//Create fullscreen quad output shader program
 	output.CreateProgram("../Assets/Shaders/Fullscreenquad");
 	outputWithSSAOBlur.CreateProgram("../Assets/Shaders/FullscreenquadWithBlur");
@@ -26,11 +26,11 @@ Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, 
 	cameraBuffer.BufferData(1, sizeof(Camera::CameraStruct), 0, GL_DYNAMIC_DRAW);
 
 	//Load texture atlas (block textures)
-	texture.Load("../Assets/testBlockTex.png");
+	textureAtlas.Load("../Assets/testBlockTex.png");
 
 	//Init gbuffer(textures and framebuffer)
 	gbuffer.Init(width, height);
-
+	water.Init(width, height, gbuffer.GetTextureHandle(GBuffer::GBUFFER_TEXTURE_DEPTH), gbuffer.GetTextureHandle(GBuffer::GBUFFER_TEXTURE_COLOR));
 	ssao.Init(width, height);
 }
 
@@ -41,7 +41,7 @@ Renderer::~Renderer()
 
 void Renderer::Draw()
 {
-	//Write color and normals to gbuffer
+	//Write color, normals and Vpositions to gbuffer
 	gbuffer.Bind();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -50,16 +50,23 @@ void Renderer::Draw()
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, cameraBuffer.GetBufferId());
 
 	//Bind texture atlas(block textures)
-	texture.Bind(0);
-	shaderProgram.Use();
+	textureAtlas.Bind(0);
+	chunkProgram.Use();
 	//Render all chunks
 	chunkManager->Draw();
-	texture.Unbind(0);
+	textureAtlas.Unbind(0);
 
 	//TODO: maybe run a light pass on compute shader with lights in storage buffers?
 	//      Could use storagebuffer .length function to have a dynamic vector of lights
 
-	gbuffer.BindTextures();
+	gbuffer.Unbind();
+
+	//Bind Gbuffer textures for read
+	gbuffer.BindTexture(GBuffer::GBUFFER_TEXTURE_COLOR);
+	gbuffer.BindTexture(GBuffer::GBUFFER_TEXTURE_NORMALS);
+	gbuffer.BindTexture(GBuffer::GBUFFER_TEXTURE_POSITION);
+	gbuffer.BindTexture(GBuffer::GBUFFER_TEXTURE_COLOR_OUT);
+	gbuffer.BindTexture(GBuffer::GBUFFER_TEXTURE_DEPTH);
 
 	if (SSAOEnabled)
 	{ 
@@ -69,9 +76,16 @@ void Renderer::Draw()
 		ssao.Unbind();
 	}
 
+	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_COLOR);
+	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_DEPTH);
+
+	water.Draw();
+	water.BindFullscreenTexForRead(0);
+
+	//Bind default window frame buffer for output to backbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
 	if (SSAOEnabled)
 	{
 		ssao.BindTexForRead(4);
@@ -79,13 +93,14 @@ void Renderer::Draw()
 	}
 	else
 		output.Use();
+
 	//Output gbuffer color to fullscreen quad
 	fullscreenquad.Draw();
-	ssao.BindTexForRead(3);
-	gbuffer.UnbindTextures();
+
+	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_NORMALS);
+	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_POSITION);
+	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_COLOR_OUT);
 }
-
-
 
 void Renderer::Resize(unsigned width, unsigned height)
 {
@@ -96,5 +111,10 @@ void Renderer::Resize(unsigned width, unsigned height)
 bool& Renderer::GetSSAOFlag()
 {
 	return SSAOEnabled;
+}
+
+void Renderer::Update(float dt)
+{
+	water.Update(dt);
 }
 
