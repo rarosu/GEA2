@@ -29,6 +29,6 @@ void main ()
 	vec4 posV = viewMatrix * vec4(in_pos, 1.0);
 	out_posV = posV.xyz;
 	vec4 normV =  viewMatrix * vec4(in_norm, 0);
-	out_normV = normV.xyz;
+	out_normV = in_norm;
 	gl_Position = projMatrix * posV;
 }
