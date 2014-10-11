@@ -38,10 +38,12 @@ void main()
 	//Calculate transparent color and refraction - Need more accuracy when refracting using view space normals
 	////////////////////////////////////////////////////////////////////////////
 
-	mat3 TBN				= mat3(vec3(0, 0, -1), vec3(-1, 0, 0), out_normV);
+	mat3 TBN				= mat3(vec3(0, 0, 1), vec3(1, 0, 0), vec3(0, 1, 0));
 
-	vec3 normal 			= texture(normalMap, out_texc * 32.0 + vec2(time*0.05, 0)).xyz;
-	normal 					= normalize(TBN * normal);
+	vec3 normal 			= normalize(texture(normalMap, out_texc * 32.0 + vec2(time*0.05, 0)).xzy* 2.0 - 1.0) ;
+	vec3 normal2 			= normalize(texture(normalMap, out_texc * 48.0 + vec2(time * (0.025), 0)).xzy* 2.0 - 1.0) ;
+	normal = mix(normal, normal2, 0.5);
+//	normal 					= normalize(TBN * normal);
 	vec4 normalM 			= normalize(viewMatrix * vec4(normal.xyz, 0));
 	vec2 screenTexCoord		= gl_FragCoord.xy / textureSize(diffuseTex, 0);
 	ivec2 screenAbsCoord	= ivec2(gl_FragCoord.xy);
@@ -69,10 +71,10 @@ void main()
 	
 	vec3 waterColor	= mix(result, vec3(0, 0.1, 0.4), distFac);
 
-	float ndotl		= max(dot(normalize(camPos - out_posW), normalize(normal.xyz)), 0.0);
+	float ndotl		= max(dot(normalize(camPos - out_posW), normalize(normal)), 0.0);
 	float fresnel	= Fresnel(ndotl, 0.2, 6.0);
 
-	result = mix(waterColor, vec3(0, 0.4, 1), fresnel);
+	result = mix(waterColor, vec3(135.0/255.0, 206.0/255.0, 1.0), clamp(fresnel, 0.0, 0.3));
 
 	color = result;
 }
