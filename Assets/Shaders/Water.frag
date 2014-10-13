@@ -40,8 +40,8 @@ void main()
 
 	mat3 TBN				= mat3(vec3(0, 0, 1), vec3(1, 0, 0), vec3(0, 1, 0));
 
-	vec3 normal 			= normalize(texture(normalMap, out_texc * 32.0 + vec2(time*0.05, 0)).xzy* 2.0 - 1.0) ;
-	vec3 normal2 			= normalize(texture(normalMap, out_texc * 48.0 + vec2(time * (0.025), 0)).xzy* 2.0 - 1.0) ;
+	vec3 normal 			= normalize(texture(normalMap, out_texc * 640.0 + vec2(time*0.05, 0)).xzy* 2.0 - 1.0) ;
+	vec3 normal2 			= normalize(texture(normalMap, out_texc * 960.0 + vec2(time * (0.025), 0)).xzy* 2.0 - 1.0) ;
 	normal = mix(normal, normal2, 0.5);
 //	normal 					= normalize(TBN * normal);
 	vec4 normalM 			= normalize(viewMatrix * vec4(normal.xyz, 0));

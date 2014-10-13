@@ -19,26 +19,13 @@ void Water::Init(int windowWidth, int windowHeight, GLuint depthTex, GLuint colo
 
 	glGenFramebuffers(1, &fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-	/*glGenTextures(1, &outTexture);
-	glBindTexture(GL_TEXTURE_2D, outTexture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);*/
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, inColorTex, 0);
 	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, inDepthTex, 0);
 
 	GLenum drawBuffers[] = { GL_COLOR_ATTACHMENT0 };
 	glDrawBuffers(1, drawBuffers);
 
-	//normalTexture.Load("../Assets/testBlockTex.png");
-	/*glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	*/
-
+	
 	GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	if (status != GL_FRAMEBUFFER_COMPLETE)
@@ -53,12 +40,12 @@ void Water::Init(int windowWidth, int windowHeight, GLuint depthTex, GLuint colo
 	float waterheight = 12.5f;
 	Vertex waterQuadV[] =
 	{
-		Vertex(glm::vec4(0, waterheight, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
-		Vertex(glm::vec4(0, waterheight, 1000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
-		Vertex(glm::vec4(1000, waterheight, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
-		Vertex(glm::vec4(1000, waterheight, 0, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
-		Vertex(glm::vec4(0, waterheight, 1000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
-		Vertex(glm::vec4(1000, waterheight, 1000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1))
+		Vertex(glm::vec4(-10000, waterheight, -10000, 1), glm::vec3(0, 1, 0), glm::vec2(0, 0)),
+		Vertex(glm::vec4(-10000, waterheight, 10000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
+		Vertex(glm::vec4(10000, waterheight, -10000, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
+		Vertex(glm::vec4(10000, waterheight, -10000, 1), glm::vec3(0, 1, 0), glm::vec2(0, 1)),
+		Vertex(glm::vec4(-10000, waterheight, 10000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 0)),
+		Vertex(glm::vec4(10000, waterheight, 10000, 1), glm::vec3(0, 1, 0), glm::vec2(1, 1))
 	};
 
 	//Create fullscreen quad mesh
