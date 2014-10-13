@@ -49,6 +49,7 @@ void ChunkManager::Update(float dt)
 			it++;
 		}
 	}
+	nrOfTasks = chunkFutures.size();
 
 	//looping over high and low creates a box around the camera containing possible loaded/unloaded chunks. Go through these and do load/unload logic. 
 	//(Previously we looped through 500k chunks in a 512x2x512 level, this approach takes it down to worst case ish (CHUNK_LOAD_DISTANCE*2)^3 and in the case of 512x2x512 the worst case is (CHUNK_LOAD_DISTANCE*2)^2 * 2)
@@ -73,6 +74,8 @@ void ChunkManager::Draw()
 	nrOfRenderedChunks = 0;
 	for (auto chunk : drawList)
 	{
+		++nrOfRenderedChunks;
+
 		glm::mat4 WVP = camera->GetViewProjMatrix() * chunk->worldMatrix;
 		glm::vec4 center = WVP * glm::vec4(metaHeader.CX / 2, metaHeader.CY / 2, metaHeader.CZ / 2, 1);
 		center.x /= center.w;
@@ -88,7 +91,7 @@ void ChunkManager::Draw()
 		glBindVertexBuffer(0, chunk->vertexBuffer.GetBufferId(), 0, chunk->vertexBuffer.GetElementSize());
 
 		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
-		++nrOfRenderedChunks;
+		
 	}	
 }
 
@@ -154,6 +157,11 @@ int& ChunkManager::GetNrOfBlocks()
 int ChunkManager::GetNrOfChunks()
 {
 	return nrOfChunks;
+}
+
+int& ChunkManager::GetNrOfTasks()
+{
+	return nrOfTasks;
 }
 
 /*void ChunkManager::AddChunk(int x, int y, int z)

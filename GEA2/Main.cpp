@@ -95,6 +95,7 @@ int main(int argc, char* argv[])
 	TwAddVarRO(antbar, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS'");
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
 	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
+	TwAddVarRO(antbar, "Tasks", TW_TYPE_INT32, &(chunkManager->GetNrOfTasks()), "");
 
 	//Timer
 	uint32_t oldTime, currentTime;

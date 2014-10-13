@@ -25,10 +25,12 @@ public:
 	int& GetNrOfBlocks();
 	int& GetViewRadius();
 	int& GetNrOfRenderedChunks();
+	int& GetNrOfTasks();
 	int GetNrOfChunks();
 	
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
+
 	
 	
 
@@ -38,8 +40,10 @@ private:
 		Resource<Chunk> operator()(std::mutex* mutex, ChunkResourceManager* chunkLoader, int x, int y, int z)
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
+
 			if (chunk != nullptr)
 				chunk->UpdateChunk(mutex);
+			
 			return chunk;
 		}
 	};
@@ -50,6 +54,7 @@ private:
 	int nrOfChunks;
 	int nrOfBlocks;
 	int nrOfRenderedChunks;
+	int nrOfTasks;
 
 	ChunkResourceManager chunkResManager;
 	ThreadPool chunkLoadPool;

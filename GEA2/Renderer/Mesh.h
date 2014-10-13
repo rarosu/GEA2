@@ -7,6 +7,7 @@
 
 struct Vertex  
 {
+	Vertex() {}
 	Vertex(glm::vec4 pos, glm::vec3 norm, glm::vec2 texC)
 		: position(pos), normal(glm::vec4(norm, 0)), textureC(texC){}
 
