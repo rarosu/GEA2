@@ -21,6 +21,7 @@ SDL_GLContext context;
 TwBar* antbar;
 ChunkManager* chunkManager;
 Filesystem filesystem;
+MemoryAllocator allocator;
 
 #undef main
 
@@ -47,11 +48,11 @@ int main(int argc, char* argv[])
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
 	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
-	glewExperimental = GL_TRUE; 
 	context = SDL_GL_CreateContext(window);
 
 	SDL_GL_SetSwapInterval(0);
 
+	glewExperimental = GL_TRUE;
 	glewInit();
 
 	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -76,7 +77,9 @@ int main(int argc, char* argv[])
 	std::cin >> vWorldPath;
 	vWorldPath.append(".world");
 
-	chunkManager = new ChunkManager(&filesystem, &camera, vWorldPath);
+	chunkManager = new ChunkManager(&filesystem, &allocator, &camera, vWorldPath);
+
+	SDL_GL_MakeCurrent(window, context);
 
 	//Initialize renderer
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -84,15 +87,22 @@ int main(int argc, char* argv[])
 	//Initialize camera
 	camera.SetLens(45.0f, 0.5f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	float fps = 0;
+
 	//Set up some anttweakbar bars
 	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
+	TwAddVarRO(antbar, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS'");
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
 	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
 
 	//Timer
 	uint32_t oldTime, currentTime;
 	float dt;
+
+	int frames = 0;
+	
+	float dtime = 0;
 
 	currentTime = SDL_GetTicks();
 
@@ -102,6 +112,16 @@ int main(int argc, char* argv[])
 		oldTime = currentTime;
 		currentTime = SDL_GetTicks();
 		dt = (currentTime - oldTime) / 1000.0f;
+
+		frames++;
+		dtime += dt;
+
+		if (frames == 30)
+		{
+			fps = frames / dtime;
+			frames = 0;
+			dtime = 0;
+		}
 
 		//Event handling
 		running = HandleEvents();
@@ -134,7 +154,9 @@ int main(int argc, char* argv[])
 		SDL_GL_SwapWindow(window);
 	}
 
+	delete chunkManager;
 	delete renderer;
+	
 	TwTerminate();
 	IMG_Quit();
 	SDL_GL_DeleteContext(context);

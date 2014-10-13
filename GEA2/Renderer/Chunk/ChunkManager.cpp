@@ -2,13 +2,13 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
-ChunkManager::ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath)
-	: chunkResManager(filesystem, vWorldPath), camera(pcamera), metaHeader(chunkResManager.GetGlobalWorldHeader())
+
+ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath)
+: chunkResManager(filesystem, allocator, vWorldPath), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS), metaHeader(chunkResManager.GetGlobalWorldHeader())
 {
 	CHUNK_LOAD_DISTANCE = 16;
 	nrOfRenderedChunks = 0;
 }
-
 
 ChunkManager::~ChunkManager()
 {
@@ -17,9 +17,9 @@ ChunkManager::~ChunkManager()
 void ChunkManager::Update(float dt)
 {
 	//Get chunk position
-	int cx = camera->GetPosition().x / metaHeader.CX;
-	int cy = camera->GetPosition().y / metaHeader.CY;
-	int cz = camera->GetPosition().z / metaHeader.CZ;
+	int cx = (int)camera->GetPosition().x / metaHeader.CX;
+	int cy = (int)camera->GetPosition().y / metaHeader.CY;
+	int cz = (int)camera->GetPosition().z / metaHeader.CZ;
 
 	//Get lower chunk iteration pos
 	int lowX = std::max(cx - (CHUNK_LOAD_DISTANCE + 1), 0);
@@ -30,6 +30,25 @@ void ChunkManager::Update(float dt)
 	int highX = std::min(cx + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCX);
 	int highY = std::min(cy + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCY);
 	int highZ = std::min(cz + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCZ);
+
+	// Check for loaded chunks to add to the draw list.
+	std::vector<std::pair<int, std::future<Resource<Chunk>>>>::iterator it;
+	for (it = chunkFutures.begin(); it != chunkFutures.end();)
+	{
+		if (it->second._Is_ready())
+		{
+			Resource<Chunk> chunk = it->second.get();
+			drawList.push_back(chunk);
+			existMap[it->first] = chunk;
+
+			it = chunkFutures.erase(it);
+		
+		}
+		else
+		{
+			it++;
+		}
+	}
 
 	//looping over high and low creates a box around the camera containing possible loaded/unloaded chunks. Go through these and do load/unload logic. 
 	//(Previously we looped through 500k chunks in a 512x2x512 level, this approach takes it down to worst case ish (CHUNK_LOAD_DISTANCE*2)^3 and in the case of 512x2x512 the worst case is (CHUNK_LOAD_DISTANCE*2)^2 * 2)
@@ -63,8 +82,12 @@ void ChunkManager::Draw()
 			continue;
 		if (fabsf(center.x) > 1 + fabsf(metaHeader.CY * 2 / center.w) || fabsf(center.y) > 1 + fabsf(metaHeader.CY * 2 / center.w))
 			continue;
+		if (!chunk->numberOfElements)
+			continue;
 
-		chunk->Draw();
+		glBindVertexBuffer(0, chunk->vertexBuffer.GetBufferId(), 0, chunk->vertexBuffer.GetElementSize());
+
+		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
 		++nrOfRenderedChunks;
 	}	
 }
@@ -79,6 +102,9 @@ uint8_t ChunkManager::Get(int x, int y, int z)
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return 0;
+
 		x %= metaHeader.CX;
 		y %= metaHeader.CY;
 		z %= metaHeader.CZ;
@@ -99,6 +125,9 @@ void ChunkManager::Set( int x, int y, int z, uint8_t type )
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return;
+
 		x %= metaHeader.CX;
 		y %= metaHeader.CY;
 		z %= metaHeader.CZ;
@@ -127,28 +156,49 @@ int ChunkManager::GetNrOfChunks()
 	return nrOfChunks;
 }
 
-void ChunkManager::AddChunk(int x, int y, int z)
+/*void ChunkManager::AddChunk(int x, int y, int z)
 {
 	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
 	if (existMap.find(pos) == existMap.end())
 	{
 		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
-		
+
 		drawList.push_back(chunk);
 		existMap[pos] = chunk;
 	}
+}*/
+
+void ChunkManager::AddChunk(int x, int y, int z)
+{
+	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
+	if (existMap.find(pos) == existMap.end())
+	{
+		chunkFutures.push_back(
+			std::pair<int, std::future<Resource<Chunk>>>(
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));	
+
+		existMap[pos] = Resource<Chunk>();
+	}
 }
+
 
 void ChunkManager::RemoveChunk(int x, int y, int z)
 {
+	// Check if there is a chunk loaded.
 	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
+
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return;
+
 		auto itdraw = std::find(drawList.begin(), drawList.end(), itmap->second);
 		drawList.erase(itdraw);
 		existMap.erase(pos);
 	}
+
+	// TODO: Check if there is a chunk currently being loaded and in that case abort the task.
 }
 
 void ChunkManager::DestroyBlock()

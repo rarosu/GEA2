@@ -4,28 +4,24 @@
 #include <gtc/matrix_transform.hpp>
 #include <ChunkResourceManager.h>
 
-Chunk::Chunk(const glm::vec3& worldPos, const MetaWorldHeader& metaHeader)
-	: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), chunkMesh(nullptr), metaWorldHeader(metaHeader)
+Chunk::Chunk(char* blockListMemory, const glm::vec3& worldPos, const MetaWorldHeader& metaHeader)
+: changed(true), numberOfElements(0), left(nullptr), right(nullptr), below(nullptr), above(nullptr), front(nullptr), back(nullptr), metaWorldHeader(metaHeader), vertexBuffer(GL_ARRAY_BUFFER)
 {
 	worldMatrix = glm::translate(worldMatrix, worldPos);
 	//Calculate world position only when chunk is created, no need for world matrix! WOOOO!
 	worldP = glm::vec4(worldPos.x , worldPos.y, worldPos.z , 0.0f);
 	//Set all blocks in chunk to 0 (air), this causes the mesh generation to not create any vertices, see UpdateChunk() for deatails
-	blockList = new uint8_t[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ];
+	blockList = new(blockListMemory) uint8_t[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ];
 	
 	memset(blockList, 0, sizeof(uint8_t) * metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ);
 }
 
 Chunk::~Chunk()
 {
-	//Delete chunk mesh on chunk destruction
-	if (chunkMesh)
-		delete chunkMesh;
 
-	delete[] blockList;
 }
 
-void Chunk::UpdateChunk()
+void Chunk::UpdateChunk(std::mutex* mutex)
 {
 	changed = false;
 
@@ -144,35 +140,25 @@ void Chunk::UpdateChunk()
 
 	numberOfElements = renderList.size();
 
-	//Delete old mesh 
-	if (chunkMesh)
-		delete chunkMesh;
-
 	//Don't create mesh if all blocks are air
 	if (numberOfElements == 0)
 		return;
 
-	//Create vertexbuffer!
-	chunkMesh = new Mesh();
-	chunkMesh->CreateVertexBuffer(&renderList[0], numberOfElements);
-	
+	std::lock_guard<std::mutex> lock(*mutex);
+
+	vertexBuffer.BufferData(numberOfElements, sizeof(Vertex), &renderList[0], GL_STATIC_DRAW);
+
+	// Synch.
+	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+	GLenum result;
+	while (true)
+	{
+		result = glClientWaitSync(fenceId, GL_SYNC_FLUSH_COMMANDS_BIT, GLuint64(5000000000)); //5 Second timeout
+		if (result != GL_TIMEOUT_EXPIRED) break; //we ignore timeouts and wait until all OpenGL commands are processed!
+	}
+
+	glDeleteSync(fenceId);
 }
-
-void Chunk::Draw()
-{
-	if(changed)
-		UpdateChunk();
-
-	//Don't draw if there are no vertices of no mesh ( these go hand-in-hand and only one is actually needed, but keeping them both for security)
-	if(!numberOfElements)
-		return;
-
-	if (!chunkMesh)
-		return;
-
-	chunkMesh->Draw();
-}
-
 
 void Chunk::Set( int x, int y, int z, uint8_t type )
 {

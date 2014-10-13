@@ -1,8 +1,31 @@
 #include "Renderer.h"
 
+#if defined(_DEBUG)
+#include <Windows.h>
+void APIENTRY PrintOpenGLError(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar* message, const void* param) {
+	printf("OpenGL Error: %s.\n", message);
+}
+#endif
+
 Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height)
 	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false)
 {
+
+#if defined(_DEBUG)
+	if (glDebugMessageCallback)
+	{
+		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+		glDebugMessageCallback(PrintOpenGLError, nullptr);
+		GLuint unusedIds = 0;
+		glDebugMessageControlARB(GL_DONT_CARE,
+			GL_DONT_CARE,
+			GL_DONT_CARE,
+			0,
+			&unusedIds,
+			true);
+	}
+#endif
+
 	//Create chunk rendering shader program
 	chunkProgram.CreateProgram("../Assets/Shaders/Cube");
 	//Create fullscreen quad output shader program
@@ -32,11 +55,29 @@ Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, 
 	gbuffer.Init(width, height);
 	water.Init(width, height, gbuffer.GetTextureHandle(GBuffer::GBUFFER_TEXTURE_DEPTH), gbuffer.GetTextureHandle(GBuffer::GBUFFER_TEXTURE_COLOR));
 	ssao.Init(width, height);
+
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
+
+	glEnableVertexAttribArray(0);
+	glEnableVertexAttribArray(1);
+	glEnableVertexAttribArray(2);
+
+	glVertexAttribFormat(0, 3, GL_FLOAT, GL_FALSE, 0);
+	glVertexAttribBinding(0, 0);
+
+	glVertexAttribFormat(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float));
+	glVertexAttribBinding(1, 0);
+
+	glVertexAttribFormat(2, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(float));
+	glVertexAttribBinding(2, 0);
+
+	glBindVertexArray(0);
 }
 
 Renderer::~Renderer()
 {
-
+	glDeleteVertexArrays(1, &vao);
 }
 
 void Renderer::Draw()
@@ -52,8 +93,10 @@ void Renderer::Draw()
 	//Bind texture atlas(block textures)
 	textureAtlas.Bind(0);
 	chunkProgram.Use();
+	glBindVertexArray(vao);
 	//Render all chunks
 	chunkManager->Draw();
+	glBindVertexArray(0);
 	textureAtlas.Unbind(0);
 
 	//TODO: maybe run a light pass on compute shader with lights in storage buffers?

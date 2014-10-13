@@ -24,6 +24,7 @@ public:
 	void Resize(unsigned width, unsigned height);
 
 	bool& GetSSAOFlag();
+
 private:
 
 	ShaderProgram	chunkProgram;
@@ -40,4 +41,6 @@ private:
 	Water			water;
 
 	bool			SSAOEnabled;
+
+	GLuint vao;
 };

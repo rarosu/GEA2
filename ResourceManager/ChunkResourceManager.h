@@ -3,8 +3,9 @@
 #include "Resource.h"
 #include "ResourceContainer.h"
 #include "Filesystem.h"
+#include "MemoryAllocator.h"
 #include "../GEA2/Renderer/Chunk/Chunk.h"
-
+#include "Memory/PoolAllocator.h"
 #include <mutex>
 
 struct MetaWorldHeader
@@ -22,7 +23,7 @@ class ChunkResourceManager
 {
 PUBLIC:
 
-	ChunkResourceManager(Filesystem* filesystem, const std::string& vWorldPath);
+	ChunkResourceManager(Filesystem* filesystem, MemoryAllocator* allocator, const std::string& vWorldPath);
 	~ChunkResourceManager();
 
 	Resource<Chunk> Load(int x, int y, int z);
@@ -40,6 +41,9 @@ PRIVATE:
 	header_element* header;
 	ResourceContainer<Chunk> chunks;
 	Filesystem* filesystem;
+	MemoryAllocatorInterface allocator;
+	void* chunkMem;
+	ThreadedPoolAllocator* pool;
 	std::mutex mutex;
 	std::shared_ptr<File> file;
 	MetaWorldHeader globalFileHeader;

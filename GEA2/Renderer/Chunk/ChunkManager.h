@@ -5,12 +5,14 @@
 #include "../Camera.h"
 #include <cstdint>
 #include <ChunkResourceManager.h>
+#include <ThreadPool.h>
 #include <map>
+#include <mutex>
 
 class ChunkManager
 {
 public:
-	ChunkManager(Filesystem* filesystem, Camera* pcamera, const std::string& vWorldPath);
+	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath);
 	~ChunkManager();
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);
@@ -31,19 +33,32 @@ public:
 	
 
 private:
+	struct LoadChunkTask
+	{
+		Resource<Chunk> operator()(std::mutex* mutex, ChunkResourceManager* chunkLoader, int x, int y, int z)
+		{
+			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
+			if (chunk != nullptr)
+				chunk->UpdateChunk(mutex);
+			return chunk;
+		}
+	};
 
-	
+	static const int CHUNK_LOAD_THREADS = 1;
 	int CHUNK_LOAD_DISTANCE;
+
 	int nrOfChunks;
 	int nrOfBlocks;
 	int nrOfRenderedChunks;
 
 	ChunkResourceManager chunkResManager;
-
+	ThreadPool chunkLoadPool;
+	std::vector<std::pair<int, std::future<Resource<Chunk>>>> chunkFutures;
 	std::vector<Resource<Chunk>> drawList;
 	std::map<int, Resource<Chunk>> existMap;
 
 	Camera* camera;
-	
+	std::mutex mutex;
+
 	const MetaWorldHeader& metaHeader;
 };

@@ -5,6 +5,8 @@
 #include <vector>
 #include <cstdint>
 #include <glm.hpp>
+#include <mutex>
+
 
 struct MetaWorldHeader;
 
@@ -17,7 +19,7 @@ typedef glm::detail::tvec4<uint8_t, glm::lowp> byte4;
 class Chunk
 {
 public:
-	Chunk(const glm::vec3& worldPos, const MetaWorldHeader& metaHeader);
+	Chunk(char* blockListMemory, const glm::vec3& worldPos, const MetaWorldHeader& metaHeader);
 	~Chunk();
 
 	//Get block type at chunk relative position
@@ -27,10 +29,7 @@ public:
 	void Set(int x, int y, int z, uint8_t type);
 
 	//Update the VB of the chunk if blocks have been altered
-	void UpdateChunk();
-
-	//Get the Mesh of the chunk
-	void Draw();
+	void UpdateChunk(std::mutex* mutex);
 
 	//Block list
 	uint8_t* blockList;
@@ -49,15 +48,15 @@ public:
 	//Temp world matrix
 	glm::mat4 worldMatrix;
 
-private:
+	Buffer vertexBuffer;
 
 	//Number of elements
 	size_t numberOfElements;
 
-	//vertex buffer
-	Mesh* chunkMesh;
+private:
 
 	const MetaWorldHeader& metaWorldHeader;
 	glm::vec4 worldP;
 	int GetBlockArrayIndex(int x, int y, int z);
+
 };
