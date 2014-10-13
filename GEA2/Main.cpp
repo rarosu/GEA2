@@ -152,6 +152,7 @@ int main(int argc, char* argv[])
 		SDL_GL_SwapWindow(window);
 	}
 
+	delete chunkManager;
 	delete renderer;
 	
 	TwTerminate();

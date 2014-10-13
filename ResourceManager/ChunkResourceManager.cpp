@@ -46,7 +46,7 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, MemoryAllocat
 
 	size_t chunkSize = global_header.CX * global_header.CY * global_header.CZ + sizeof(Chunk);
 
-	void* chunkMem = allocator.Alloc(chunkSize * global_header.SCX * global_header.SCY * global_header.SCZ);
+	chunkMem = allocator.Alloc(chunkSize * global_header.SCX * global_header.SCY * global_header.SCZ);
 
 	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, chunkSize, global_header.SCX * global_header.SCY * global_header.SCZ);
 }
@@ -77,11 +77,19 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 	auto internal = chunks.GetResource(hash);
 	if (internal != nullptr)
+	{
+		std::cerr << "Resource found." << std::endl;
 		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
+	}
+		
 
 	{
 		if (file == nullptr)
+		{
+			std::cerr << "File not open." << std::endl;
 			return Resource<Chunk>();
+		}
+			
 
 		struct header_element
 		{
@@ -107,8 +115,12 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 		internal = chunks.AddResource(hash, chunk);
 		if (internal == nullptr)
+		{
+			std::cerr << "Collision with hash." << std::endl;
 			return Resource<Chunk>();
-
+		}
+			
+		//std::cerr << "Resource created." << std::endl;
 		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
 	}
 }
