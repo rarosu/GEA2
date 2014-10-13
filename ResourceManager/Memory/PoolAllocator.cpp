@@ -40,7 +40,7 @@ void PoolAllocator::Initialize(unsigned elementSize, unsigned numElements)
 
 void PoolAllocator::Free()
 {
-    free(m_start);
+    //free(m_start);
 }
 
 void* PoolAllocator::Alloc()

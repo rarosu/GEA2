@@ -52,18 +52,6 @@ void ChunkManager::Update(float dt)
 
 void ChunkManager::Draw()
 {
-
-	// Synch.
-	GLsync fenceId = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-	GLenum result;
-	while (true)
-	{
-		result = glClientWaitSync(fenceId, GL_SYNC_FLUSH_COMMANDS_BIT, GLuint64(5000000000)); //5 Second timeout
-		if (result != GL_TIMEOUT_EXPIRED) break; //we ignore timeouts and wait until all OpenGL commands are processed!
-	}
-	glDeleteSync(fenceId);
-
-
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, worldMatBuf.GetBufferId());
 
 	for (auto chunk : drawList)
@@ -77,8 +65,6 @@ void ChunkManager::Draw()
 
 		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
 	}
-
-	std::cout << drawList.size() << std::endl;
 }
 
 uint8_t ChunkManager::Get(int x, int y, int z)
@@ -91,6 +77,9 @@ uint8_t ChunkManager::Get(int x, int y, int z)
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return 0;
+
 		x %= metaHeader.CX;
 		y %= metaHeader.CY;
 		z %= metaHeader.CZ;
@@ -111,6 +100,9 @@ void ChunkManager::Set( int x, int y, int z, uint8_t type )
 	auto itmap = existMap.find(pos);
 	if (itmap != existMap.end())
 	{
+		if (itmap->second == nullptr)
+			return;
+
 		x %= metaHeader.CX;
 		y %= metaHeader.CY;
 		z %= metaHeader.CZ;
@@ -140,7 +132,6 @@ int ChunkManager::GetNrOfChunks()
 		existMap[pos] = chunk;
 	}
 }*/
-
 
 void ChunkManager::AddChunk(int x, int y, int z)
 {
