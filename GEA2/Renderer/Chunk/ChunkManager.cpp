@@ -62,11 +62,29 @@ void ChunkManager::Update(float dt)
 				{
 					AddChunk(x, y, z);
 				}
-				else
-				{
-					RemoveChunk(x, y, z);
-				}
 			}	
+
+	for (auto it = existMap.begin(); it != existMap.end();)
+	{
+		if (it->second == nullptr)
+		{
+			it++;
+			continue;
+		}
+
+		glm::vec3 displacement = camera->GetPosition() - glm::vec3(it->second->worldP);
+
+		float dist = glm::dot(displacement, displacement);
+		if (dist > (CHUNK_LOAD_DISTANCE*metaHeader.CX * CHUNK_LOAD_DISTANCE*metaHeader.CX))
+		{
+			// Check if there is a chunk loaded
+			auto itdraw = std::find(drawList.begin(), drawList.end(), it->second);
+			drawList.erase(itdraw);
+			it = existMap.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 void ChunkManager::Draw()
@@ -192,19 +210,7 @@ void ChunkManager::AddChunk(int x, int y, int z)
 
 void ChunkManager::RemoveChunk(int x, int y, int z)
 {
-	// Check if there is a chunk loaded.
-	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
-
-	auto itmap = existMap.find(pos);
-	if (itmap != existMap.end())
-	{
-		if (itmap->second == nullptr)
-			return;
-
-		auto itdraw = std::find(drawList.begin(), drawList.end(), itmap->second);
-		drawList.erase(itdraw);
-		existMap.erase(pos);
-	}
+	
 
 	// TODO: Check if there is a chunk currently being loaded and in that case abort the task.
 }

@@ -91,6 +91,7 @@ int main(int argc, char* argv[])
 	std::cout << "Compressed size   : " << compressedSize << std::endl;
 	std::cout << "Size ratio        : " << (float)compressedSize / (float)(SCX * SCY * SCZ * 8 + 4 + CX * CY * CZ * SCX * SCY * SCZ) << std::endl;
 	std::cin.get();
+	std::cin.get();
 }
 
 void Set(int x, int y, int z, uint8_t type, unsigned char* blockData)

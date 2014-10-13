@@ -47,9 +47,10 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, MemoryAllocat
 
 	size_t chunkSize = global_header.CX * global_header.CY * global_header.CZ + sizeof(Chunk);
 
-	chunkMem = allocator.Alloc(chunkSize * global_header.SCX * global_header.SCY * global_header.SCZ);
+	size_t poolsize = 128 * 4 * 128;
+	chunkMem = allocator.Alloc(chunkSize * poolsize);
 
-	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, chunkSize, global_header.SCX * global_header.SCY * global_header.SCZ);
+	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, chunkSize, poolsize);
 }
 ChunkResourceManager::~ChunkResourceManager()
 {

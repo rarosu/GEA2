@@ -53,10 +53,12 @@ public:
 	//Number of elements
 	size_t numberOfElements;
 
+	glm::vec4 worldP;
+
 private:
 
 	const MetaWorldHeader& metaWorldHeader;
-	glm::vec4 worldP;
+	
 	int GetBlockArrayIndex(int x, int y, int z);
 
 };
