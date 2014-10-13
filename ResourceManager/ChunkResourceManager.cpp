@@ -100,7 +100,9 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		int i = globalFileHeader.SCZ * globalFileHeader.SCY * x + globalFileHeader.SCZ * y + z;
 
 		//Create array, seek to chunk in file, read compressed data to mem
-		uint8_t* compressed = new uint8_t[header[i].size];
+		uint8_t* compressed = new(std::nothrow) uint8_t[header[i].size];
+		if (compressed == nullptr)
+			return Resource<Chunk>();
 
 		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
 		file->Read(compressed, header[i].size);

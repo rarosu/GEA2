@@ -11,7 +11,7 @@ solution "GEA2"
 		flags { "Symbols" }
 		targetsuffix "d"
 	configuration "Release"
-		flags { "Optimize" }
+		flags { "Optimize", "Symbols" }
 	
 	includedirs { "AntTweakBar/include/", "glew/include/GL/", "glm/glm/", "SDL/include/", "gtest/include/", "zlibwapi/include/", "ResourceManager/" }
 	
