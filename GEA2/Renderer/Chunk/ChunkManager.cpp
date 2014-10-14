@@ -136,6 +136,11 @@ uint8_t ChunkManager::Get(int x, int y, int z)
 	return 0;
 }
 
+uint8_t ChunkManager::Get(const glm::vec3& pos)
+{
+	return Get((int)pos.x, (int)pos.y, (int)pos.z);
+}
+
 void ChunkManager::Set( int x, int y, int z, uint8_t type )
 {
 	int cx = x / metaHeader.CX;

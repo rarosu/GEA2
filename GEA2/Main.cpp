@@ -14,6 +14,8 @@
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
 
+bool collision = false;
+
 Camera camera;
 Renderer* renderer;
 SDL_Window* window;
@@ -96,6 +98,7 @@ int main(int argc, char* argv[])
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
 	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
 	TwAddVarRO(antbar, "Tasks", TW_TYPE_INT32, &(chunkManager->GetNrOfTasks()), "");
+	TwAddVarRW(antbar, "Collision", TW_TYPE_BOOLCPP, &collision, "");
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -131,17 +134,41 @@ int main(int argc, char* argv[])
 
 		//Check keys and move camera
 		if (keystate[SDL_SCANCODE_A])
+		{
 			camera.MoveLeft(dt);
+			if (chunkManager->Get(camera.GetPosition() - camera.GetRight()) && collision)
+				camera.MoveRight(dt);
+		}
 		if (keystate[SDL_SCANCODE_D])
+		{
 			camera.MoveRight(dt);
+			if (chunkManager->Get(camera.GetPosition() + camera.GetRight()) && collision)
+				camera.MoveLeft(dt);
+		}
 		if (keystate[SDL_SCANCODE_W])
+		{
 			camera.MoveForward(dt);
+			if (chunkManager->Get(camera.GetPosition() + camera.GetFacing()) && collision)
+				camera.MoveBackward(dt);
+		}
 		if (keystate[SDL_SCANCODE_S])
+		{
 			camera.MoveBackward(dt);
+			if (chunkManager->Get(camera.GetPosition() - camera.GetFacing()) && collision)
+				camera.MoveForward(dt);
+		}
 		if (keystate[SDL_SCANCODE_SPACE])
+		{
 			camera.MoveUp(dt);
+			if (chunkManager->Get(camera.GetPosition() + camera.GetUp()) && collision)
+				camera.MoveDown(dt);
+		}
 		if (keystate[SDL_SCANCODE_LSHIFT])
+		{
 			camera.MoveDown(dt);
+			if (chunkManager->Get(camera.GetPosition() - camera.GetUp()) && collision)
+				camera.MoveUp(dt);
+		}
 
 		//Update camera matrices
 		camera.Update();

@@ -5,7 +5,7 @@
 #include "../ResourceManager/RLE/rle.c"
 #include <gtc/noise.hpp>
 
-int SCX, SCY, SCZ, CX, CY, CZ, SEALEVEL;
+int SCX, SCY, SCZ, CX, CY, CZ;
 
 int Export(const char* fileName);
 
@@ -61,23 +61,6 @@ int main(int argc, char* argv[])
 			continue;
 		}
 	
-		break;
-	}
-
-	while (1)
-	{
-		std::cout << "Enter water level(in blocks): h" << std::endl;
-		std::cin >> SEALEVEL;
-
-		//Error checking
-		if (std::cin.fail() || SEALEVEL < 0 || SEALEVEL >= CY)
-		{
-			std::cin.clear();
-			std::cin.ignore();
-			std::cout << "WROOOONG!" << std::endl;
-			continue;
-		}
-
 		break;
 	}
 
@@ -161,39 +144,30 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 				// Are we above "ground" level?
 				if (y + ay * CY >= h)
 				{
-					// If we are not yet up to sea level, fill with water blocks
-					if (y + ay * CY < SEALEVEL)
+					// A tree!
+					if (Get(x, y - 1, z, blockData) == 1 && (rand() % 50) == 0 && y < CY - 8 && z > 2 && z < CZ - 3 && x > 2 && x < CX - 3)
 					{
-						Set(x, y, z, 6, blockData);
-						continue;
-						// Otherwise, we are in the air
-					}
-					else
-					{
-						// A tree!
-						if (Get(x, y - 1, z, blockData) == 1 && (rand() % 200) == 0)
-						{
-							// Trunk
-							h = (rand() & 0x3) + 3;
-							for (int i = 0; i < h; i++)
-								Set(x, y + i, z, 5, blockData);
+						// Trunk
+						h = (rand() & 0x3) + 3;
+						for (int i = 0; i < h; i++)
+							Set(x, y + i, z, 5, blockData);
 
-							// Leaves
-							for (int ix = -3; ix <= 3; ix++)
+						// Leaves
+						for (int ix = -3; ix <= 3; ix++)
+						{
+							for (int iy = -3; iy <= 3; iy++)
 							{
-								for (int iy = -3; iy <= 3; iy++)
+								for (int iz = -3; iz <= 3; iz++)
 								{
-									for (int iz = -3; iz <= 3; iz++)
-									{
-										if (ix * ix + iy * iy + iz * iz < 8 + (rand() & 1) && !Get(x + ix, y + h + iy, z + iz, blockData))
-											Set(x + ix, y + h + iy, z + iz, 4, blockData);
-									}
+									if (ix * ix + iy * iy + iz * iz < 8 + (rand() & 1) && !Get(x + ix, y + h + iy, z + iz, blockData))
+										Set(x + ix, y + h + iy, z + iz, 4, blockData);
 								}
 							}
 						}
-						break;
 					}
+					break;
 				}
+
 				if (y + ay * CY < 11)
 				{
 					Set(x, y, z, 3, blockData);
@@ -210,15 +184,48 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 					Set(x, y, z, 8, blockData);
 				// Dirt layer, but use grass blocks for the top
 				else if (r < 1.25)
-					Set(x, y, z, (h < SEALEVEL || y + ay * CY < h - 1) ? 2 : 1, blockData);
+					Set(x, y, z, (y + ay * CY < h - 1) ? 2 : 1, blockData);
 				// Sometimes, ores. But only at least 10 below the grass line!
-				else if (h < SEALEVEL || y + ay * CY < h - 10)
+				else if (y + ay * CY < h - 10)
 					Set(x, y, z, 7, blockData);
 				else //Grass blocks as default, this is not correct but works OK
 					Set(x, y, z, 1, blockData);
 			}
 		}
 	}
+	/*
+	for (int x = 0; x < CX; x++)
+	{
+		for (int z = 0; z < CZ; z++)
+		{
+			for (int y = 0; y < CY; y++)
+			{
+				if (Get(x, y, z, blockData) == 7)
+				{
+					int loX = x - 6; 
+					int loY = y - 6;
+					int loZ = z - 6;
+
+					int hiX = x + 6;
+					int hiY = y + 6;
+					int hiZ = z + 6;
+
+					for (int x1 = loX; x1 < hiX; x1++)
+					{
+						for (int z1 = loZ; z1 < hiZ; z1++)
+						{
+							for (int y1 = loY; y1 < hiY; y1++)
+							{
+								int dist = (x1 - x)*(x1 - x) + (y1 - y)*(y1 - y) + (z1 - z)*(z1 - z);
+								if (dist < 25)
+									Set(x1, y1, z1, 0, blockData);
+							}
+						}
+					}
+				}
+			}
+		}
+	}*/
 }
 
 int Export(const char* fileName)

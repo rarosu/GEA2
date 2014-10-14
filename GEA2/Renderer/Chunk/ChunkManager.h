@@ -14,6 +14,7 @@ class ChunkManager
 public:
 	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath);
 	~ChunkManager();
+	uint8_t Get(const glm::vec3& pos);
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);
 	void Draw();

@@ -114,8 +114,19 @@ glm::vec3& Camera::GetFacing()
 	return facing;
 }
 
+glm::vec3& Camera::GetRight()
+{
+	return right;
+}
+
+glm::vec3& Camera::GetUp()
+{
+	return up;
+}
+
 float& Camera::GetSpeed()
 {
 	return camSpeed;
 }
+
 
