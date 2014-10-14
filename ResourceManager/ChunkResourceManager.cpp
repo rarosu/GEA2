@@ -47,10 +47,9 @@ ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, MemoryAllocat
 
 	size_t chunkSize = global_header.CX * global_header.CY * global_header.CZ + sizeof(Chunk);
 
-	size_t poolsize = 128 * 4 * 128;
-	chunkMem = allocator.Alloc(chunkSize * poolsize);
+	chunkMem = allocator.Alloc(chunkSize * MAX_CHUNKS_IN_MEM);
 
-	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, chunkSize, poolsize);
+	pool = new(allocator.Alloc(sizeof(ThreadedPoolAllocator))) ThreadedPoolAllocator(chunkMem, chunkSize, MAX_CHUNKS_IN_MEM);
 }
 ChunkResourceManager::~ChunkResourceManager()
 {
@@ -65,6 +64,20 @@ void ChunkResourceManager::Destructor(InternalResource<Chunk>* internal)
 	pool->Free(internal->resource);
 
 	chunks.RemoveResource(internal->hash);
+}
+
+Resource<Chunk> ChunkResourceManager::Get(int x, int y, int z)
+{
+	std::hash<std::string> hasher;
+	std::stringstream ss;
+	ss << currentVWorldPath << ',' << x << ',' << y << ',' << z;
+	auto hash = hasher(ss.str());
+
+	auto internal = chunks.GetResource(hash);
+	if (internal != nullptr)
+		return Resource<Chunk>(internal, std::bind(&ChunkResourceManager::Destructor, this, std::placeholders::_1));
+
+	return Resource<Chunk>();
 }
 
 Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)

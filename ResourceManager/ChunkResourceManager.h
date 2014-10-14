@@ -18,6 +18,7 @@ struct MetaWorldHeader
 	int CY;
 	int CZ;
 };
+const int MAX_CHUNKS_IN_MEM = 128 * 4 * 128;
 
 class ChunkResourceManager
 {
@@ -26,6 +27,7 @@ PUBLIC:
 	ChunkResourceManager(Filesystem* filesystem, MemoryAllocator* allocator, const std::string& vWorldPath);
 	~ChunkResourceManager();
 
+	Resource<Chunk> Get(int x, int y, int z);
 	Resource<Chunk> Load(int x, int y, int z);
 	void Destructor(InternalResource<Chunk>* internal);
 	const MetaWorldHeader& GetGlobalWorldHeader();

@@ -8,6 +8,8 @@ ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, C
 {
 	CHUNK_LOAD_DISTANCE = 16;
 	nrOfRenderedChunks = 0;
+	drawList.reserve(MAX_CHUNKS_IN_MEM);
+	
 }
 
 ChunkManager::~ChunkManager()
@@ -92,8 +94,6 @@ void ChunkManager::Draw()
 	nrOfRenderedChunks = 0;
 	for (auto chunk : drawList)
 	{
-		++nrOfRenderedChunks;
-
 		glm::mat4 WVP = camera->GetViewProjMatrix() * chunk->worldMatrix;
 		glm::vec4 center = WVP * glm::vec4(metaHeader.CX / 2, metaHeader.CY / 2, metaHeader.CZ / 2, 1);
 		center.x /= center.w;
@@ -105,7 +105,7 @@ void ChunkManager::Draw()
 			continue;
 		if (!chunk->numberOfElements)
 			continue;
-
+		++nrOfRenderedChunks;
 		glBindVertexBuffer(0, chunk->vertexBuffer.GetBufferId(), 0, chunk->vertexBuffer.GetElementSize());
 
 		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
