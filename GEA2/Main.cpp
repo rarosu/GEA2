@@ -99,6 +99,7 @@ int main(int argc, char* argv[])
 	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
 	TwAddVarRO(antbar, "Tasks", TW_TYPE_INT32, &(chunkManager->GetNrOfTasks()), "");
 	TwAddVarRW(antbar, "Collision", TW_TYPE_BOOLCPP, &collision, "");
+	TwAddVarRW(antbar, "Physics", TW_TYPE_BOOLCPP, &camera.GetPhysics(), "");
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -130,46 +131,54 @@ int main(int argc, char* argv[])
 		//Event handling
 		running = HandleEvents();
 
+		if (chunkManager->Get(camera.GetPosition() - glm::vec3(0, 2, 0)) && collision)
+		{
+			camera.SetOnGround(true);
+		}
+
 		const Uint8* keystate = SDL_GetKeyboardState(NULL);
 
 		//Check keys and move camera
 		if (keystate[SDL_SCANCODE_A])
 		{
 			camera.MoveLeft(dt);
-			if (chunkManager->Get(camera.GetPosition() - camera.GetRight()) && collision)
+			if (chunkManager->Get(camera.GetPosition() - camera.GetRight()) && collision && !camera.GetPhysics())
 				camera.MoveRight(dt);
 		}
 		if (keystate[SDL_SCANCODE_D])
 		{
 			camera.MoveRight(dt);
-			if (chunkManager->Get(camera.GetPosition() + camera.GetRight()) && collision)
+			if (chunkManager->Get(camera.GetPosition() + camera.GetRight()) && collision&& !camera.GetPhysics())
 				camera.MoveLeft(dt);
 		}
 		if (keystate[SDL_SCANCODE_W])
 		{
 			camera.MoveForward(dt);
-			if (chunkManager->Get(camera.GetPosition() + camera.GetFacing()) && collision)
+			if (chunkManager->Get(camera.GetPosition() + camera.GetFacing()) && collision&& !camera.GetPhysics())
 				camera.MoveBackward(dt);
 		}
 		if (keystate[SDL_SCANCODE_S])
 		{
 			camera.MoveBackward(dt);
-			if (chunkManager->Get(camera.GetPosition() - camera.GetFacing()) && collision)
+			if (chunkManager->Get(camera.GetPosition() - camera.GetFacing()) && collision&& !camera.GetPhysics())
 				camera.MoveForward(dt);
 		}
 		if (keystate[SDL_SCANCODE_SPACE])
 		{
 			camera.MoveUp(dt);
-			if (chunkManager->Get(camera.GetPosition() + camera.GetUp()) && collision)
+			if (chunkManager->Get(camera.GetPosition() + camera.GetUp()) && collision&& !camera.GetPhysics())
 				camera.MoveDown(dt);
 		}
 		if (keystate[SDL_SCANCODE_LSHIFT])
 		{
 			camera.MoveDown(dt);
-			if (chunkManager->Get(camera.GetPosition() - camera.GetUp()) && collision)
+			if (chunkManager->Get(camera.GetPosition() - camera.GetUp()) && collision && !camera.GetPhysics())
 				camera.MoveUp(dt);
 		}
 
+	
+
+		camera.UpdatePhysics(dt);
 		//Update camera matrices
 		camera.Update();
 		renderer->Update(dt);

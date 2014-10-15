@@ -24,15 +24,19 @@ public:
 	void Pitch(float angle);
 	void Yaw(float angle);
 
-	CameraStruct& GetCameraStruct();
-	glm::vec3& GetPosition();
-	glm::mat4& GetViewMatrix();
-	glm::mat4& GetProjectionMatrix();
-	glm::mat4& GetViewProjMatrix();
-	glm::vec3& GetFacing();
-	glm::vec3& GetRight();
-	glm::vec3& GetUp();
-	float&		GetSpeed();
+	CameraStruct&	GetCameraStruct();
+	glm::vec3&		GetPosition();
+	glm::mat4&		GetViewMatrix();
+	glm::mat4&		GetProjectionMatrix();
+	glm::mat4&		GetViewProjMatrix();
+	glm::vec3&		GetFacing();
+	glm::vec3&		GetRight();
+	glm::vec3&		GetUp();
+	float&			GetSpeed();
+	void			SetPhysics(bool enabled);
+	bool&			GetPhysics();
+	void			SetOnGround(bool ponGround);
+	void			AddForce(glm::vec3 addForce);
 
 	//Easy move methods
 	void MoveForward(float dt);
@@ -43,6 +47,7 @@ public:
 	void MoveDown(float dt);
 
 	void Update();
+	void UpdatePhysics(float dt);
 
 private:
 
@@ -57,5 +62,12 @@ private:
 	glm::vec3 right;
 	glm::vec3 position;
 
+	//Physics
+	glm::vec3 force;
+	glm::vec3 velocity;
+
 	float camSpeed;
+
+	bool physics;
+	bool onGround;
 };

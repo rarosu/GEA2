@@ -1,9 +1,12 @@
 #include "Camera.h"
+#include <iostream>
 
 Camera::Camera()
-	: position(glm::vec3(0, 0, -50)), up(glm::vec3(0, 1, 0)), facing(glm::vec3(0, 0, 1)), right(glm::vec3(-1, 0, 0)), camSpeed(40.0f)
+	: position(glm::vec3(0, 0, -50)), up(glm::vec3(0, 1, 0)), facing(glm::vec3(0, 0, 1)), right(glm::vec3(-1, 0, 0)), camSpeed(40.0f), physics(false), onGround(false)
 {
 	viewMatrix = glm::lookAt(position, position + facing, up);
+	force = glm::vec3(0);
+	velocity = glm::vec3(0);
 }
 
 Camera::~Camera()
@@ -13,6 +16,7 @@ Camera::~Camera()
 
 void Camera::Update()
 {
+	
 	viewMatrix = glm::lookAt(position, position + facing, up);
 	viewProjectionMatrix =  projectionMatrix * viewMatrix;
 
@@ -81,32 +85,81 @@ Camera::CameraStruct& Camera::GetCameraStruct()
 
 void Camera::MoveForward(float dt)
 {
-	position +=  camSpeed * dt * facing;
+	if (physics)
+	{
+		if (onGround)
+		{
+			force += glm::normalize(glm::vec3(facing.x, 0, facing.z)) * 500.0f;
+		}
+		else
+			force += glm::normalize(glm::vec3(facing.x, 0, facing.z));
+	}
+	else
+		position +=  camSpeed * dt * facing;
 }
 
 void Camera::MoveBackward(float dt)
 {
-	position -= camSpeed * dt * facing;
+	if (physics)
+	{
+		if (onGround)
+		{
+			force -= glm::normalize(glm::vec3(facing.x, 0, facing.z)) * 500.0f;
+		}
+		else
+			force -= glm::normalize(glm::vec3(facing.x, 0, facing.z));
+	}
+	else
+		position -= camSpeed * dt * facing;
 }
 
 void Camera::MoveRight(float dt)
 {
-	position += camSpeed * dt * right;
+	if (physics)
+	{
+		if (onGround)
+		{
+			force += glm::normalize(glm::vec3(right.x, 0, right.z)) * 500.0f;
+		}
+		else
+			force += glm::normalize(glm::vec3(right.x, 0, right.z));
+	}
+	else
+		position += camSpeed * dt * right;
 }
 
 void Camera::MoveLeft(float dt)
 {
-	position -= camSpeed * dt * right;
+	if (physics)
+	{
+		if (onGround)
+		{
+			force -= glm::normalize(glm::vec3(right.x, 0, right.z)) * 500.0f;
+		}
+		else
+			force -= glm::normalize(glm::vec3(right.x, 0, right.z));
+	}
+	else
+		position -= camSpeed * dt * right;
 }
 
 void Camera::MoveUp(float dt)
 {
-	position += camSpeed * dt * up;
+	if (physics)
+	{
+		if (onGround)
+		{
+			force += glm::vec3(0, 600, 0);
+		}
+	}
+	else
+		position += camSpeed * dt * up;
 }
 
 void Camera::MoveDown(float dt)
 {
-	position -= camSpeed * dt * up;
+	if (!physics)
+		position -= camSpeed * dt * up;
 }
 
 glm::vec3& Camera::GetFacing()
@@ -127,6 +180,42 @@ glm::vec3& Camera::GetUp()
 float& Camera::GetSpeed()
 {
 	return camSpeed;
+}
+
+void Camera::SetPhysics(bool enabled)
+{
+	force = glm::vec3(0);
+	physics = enabled;
+}
+
+bool& Camera::GetPhysics()
+{
+	return physics;
+}
+
+void Camera::SetOnGround(bool ponGround)
+{
+	velocity = glm::vec3(0);
+	onGround = ponGround;
+}
+
+void Camera::AddForce(glm::vec3 addForce)
+{
+	force += addForce;
+}
+
+void Camera::UpdatePhysics(float dt)
+{
+	if (physics)
+	{
+		//Testing some physics
+		glm::vec3 acceleration = force + glm::vec3(0, -9.81f, 0) * (onGround ? glm::vec3(0) : glm::vec3(1));
+		velocity += acceleration * dt;
+		position += velocity * dt;
+		force = glm::vec3(0);
+
+		onGround = false;
+	}
 }
 
 
