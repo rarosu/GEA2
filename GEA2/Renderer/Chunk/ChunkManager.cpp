@@ -174,6 +174,12 @@ int& ChunkManager::GetViewRadius()
 
 int& ChunkManager::GetNrOfBlocks()
 {
+	int vertices = 0;
+	for (auto d : drawList)
+	{
+		vertices += d->numberOfElements;
+	}
+	std::cout << "Number of rendered vertices: " << vertices << std::endl;
 	return nrOfBlocks;
 }
 

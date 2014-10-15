@@ -214,6 +214,11 @@ bool HandleEvents()
 						chunkManager->DestroyBlock();
 						
 					}break;
+					case SDLK_g:
+					{
+						chunkManager->GetNrOfBlocks();
+
+					}break;
 				}
 			} break;
 			//Move camera when left mouse button is pressed and mouse is moving!
