@@ -58,6 +58,15 @@ void Camera::Yaw(float angle)
 	right	= glm::normalize(glm::vec3(rot * glm::vec4(right, 0.0f)));
 }
 
+void Camera::Roll(float angle)
+{
+	glm::mat4 rot;
+	rot = glm::rotate(rot, angle, facing);
+
+	up = glm::normalize(glm::vec3(rot * glm::vec4(up, 0.0f)));
+	right = glm::normalize(glm::vec3(rot * glm::vec4(right, 0.0f)));
+}
+
 glm::vec3& Camera::GetPosition()
 {
 	return position;
