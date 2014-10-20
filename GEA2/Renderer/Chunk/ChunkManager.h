@@ -42,14 +42,13 @@ private:
 		{
 			Resource<Chunk> chunk = chunkLoader->Load(x, y, z);
 
-			if (chunk != nullptr)
-				chunk->UpdateChunk(mutex);
+			chunk->UpdateChunk();
 			
 			return chunk;
 		}
 	};
 
-	static const int CHUNK_LOAD_THREADS = 1;
+	static const int CHUNK_LOAD_THREADS = 4;
 	int CHUNK_LOAD_DISTANCE;
 
 	int nrOfChunks;

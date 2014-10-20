@@ -119,8 +119,12 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 		if (compressed == nullptr)
 			return Resource<Chunk>();
 
-		file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
-		file->Read(compressed, header[i].size);
+		{
+			std::lock_guard<std::mutex> lock(mutex);
+
+			file->Seek(header[i].address, File::Origin::ORIGIN_BEG);
+			file->Read(compressed, header[i].size);
+		}
 
 		char* chunkMem = (char*)pool->Alloc();
 		Chunk* chunk = new(chunkMem)Chunk(chunkMem + sizeof(Chunk), glm::vec3(x * globalFileHeader.CX, y * globalFileHeader.CY, z * globalFileHeader.CZ), globalFileHeader);

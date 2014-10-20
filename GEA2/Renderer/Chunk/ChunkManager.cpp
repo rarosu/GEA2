@@ -40,11 +40,22 @@ void ChunkManager::Update(float dt)
 		if (it->second._Is_ready())
 		{
 			Resource<Chunk> chunk = it->second.get();
-			drawList.push_back(chunk);
+
+			if (chunk != nullptr)
+			{
+				if (chunk->numberOfElements > 0)
+				{
+					chunk->vertexBuffer = new Buffer(GL_ARRAY_BUFFER);
+					chunk->vertexBuffer->BufferData(chunk->numberOfElements, sizeof(Vertex), chunk->vertices, GL_DYNAMIC_DRAW);
+					delete[] chunk->vertices;
+					drawList.push_back(chunk);
+				}
+			}
+
+			
 			existMap[it->first] = chunk;
 
-			it = chunkFutures.erase(it);
-		
+			it = chunkFutures.erase(it);	
 		}
 		else
 		{
@@ -81,7 +92,12 @@ void ChunkManager::Update(float dt)
 		{
 			// Check if there is a chunk loaded
 			auto itdraw = std::find(drawList.begin(), drawList.end(), it->second);
-			drawList.erase(itdraw);
+			if (itdraw != drawList.end())
+			{
+				delete (*itdraw)->vertexBuffer;
+				drawList.erase(itdraw);
+			}
+
 			it = existMap.erase(it);
 		}
 		else
@@ -106,7 +122,8 @@ void ChunkManager::Draw()
 		if (!chunk->numberOfElements)
 			continue;
 		++nrOfRenderedChunks;
-		glBindVertexBuffer(0, chunk->vertexBuffer.GetBufferId(), 0, chunk->vertexBuffer.GetElementSize());
+
+		glBindVertexBuffer(0, chunk->vertexBuffer->GetBufferId(), 0, chunk->vertexBuffer->GetElementSize());
 
 		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
 		

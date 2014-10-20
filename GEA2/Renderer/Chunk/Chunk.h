@@ -29,7 +29,7 @@ public:
 	void Set(int x, int y, int z, uint8_t type);
 
 	//Update the VB of the chunk if blocks have been altered
-	void UpdateChunk(std::mutex* mutex);
+	void UpdateChunk();
 
 	//Block list
 	uint8_t* blockList;
@@ -48,12 +48,15 @@ public:
 	//Temp world matrix
 	glm::mat4 worldMatrix;
 
-	Buffer vertexBuffer;
-
 	//Number of elements
 	size_t numberOfElements;
 
 	glm::vec4 worldP;
+
+	Buffer* vertexBuffer;
+	Vertex* vertices;
+
+
 
 private:
 
