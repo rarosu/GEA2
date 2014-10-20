@@ -49,8 +49,9 @@ private:
 		}
 	};
 
-	static const int CHUNK_LOAD_THREADS = 4;
-	int CHUNK_LOAD_DISTANCE;
+	
+	int chunkLoadDistance;
+	int previousTotalChunkCount;
 
 	int nrOfChunks;
 	int nrOfBlocks;

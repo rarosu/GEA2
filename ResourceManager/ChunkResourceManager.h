@@ -18,7 +18,7 @@ struct MetaWorldHeader
 	int CY;
 	int CZ;
 };
-const int MAX_CHUNKS_IN_MEM = 128 * 4 * 128;
+
 
 class ChunkResourceManager
 {

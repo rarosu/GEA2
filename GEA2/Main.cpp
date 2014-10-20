@@ -14,6 +14,7 @@
 #include <Filesystem.h>
 #include <FilesystemArchive.h>
 #include <ZipArchive.h>
+#include "Config.h"
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -107,7 +108,10 @@ int main(int argc, char* argv[])
 
 #ifndef SIXTYFOUR_BIT
 	//Set up some anttweakbar bars
-	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");
+	char viewRadiusProperties[128];
+	sprintf(viewRadiusProperties, "min=0 max=%d", MAX_CHUNK_LOAD_DISTANCE);
+
+	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), viewRadiusProperties);
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
 	TwAddVarRO(antbar, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS'");
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");

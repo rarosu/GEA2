@@ -2,6 +2,7 @@
 #include <sstream>
 #include "RLE/rle.c"
 #include <iostream>
+#include "../GEA2/Config.h"
 
 
 ChunkResourceManager::ChunkResourceManager(Filesystem* filesystem, MemoryAllocator* _allocator, const std::string& vWorldPath)

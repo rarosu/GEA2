@@ -2,11 +2,12 @@
 #include <fstream>
 #include <iostream>
 #include <algorithm>
+#include "../../Config.h"
 
 ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath)
-: chunkResManager(filesystem, allocator, vWorldPath), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS), metaHeader(chunkResManager.GetGlobalWorldHeader())
+: chunkResManager(filesystem, allocator, vWorldPath), camera(pcamera), chunkLoadPool(CHUNK_LOAD_THREADS), metaHeader(chunkResManager.GetGlobalWorldHeader()), previousTotalChunkCount(0)
 {
-	CHUNK_LOAD_DISTANCE = 16;
+	chunkLoadDistance = DEFAULT_CHUNK_LOAD_DISTANCE;
 	nrOfRenderedChunks = 0;
 	drawList.reserve(MAX_CHUNKS_IN_MEM);
 	
@@ -24,14 +25,14 @@ void ChunkManager::Update(float dt)
 	int cz = (int)camera->GetPosition().z / metaHeader.CZ;
 
 	//Get lower chunk iteration pos
-	int lowX = std::max(cx - (CHUNK_LOAD_DISTANCE + 1), 0);
-	int lowY = std::max(cy - (CHUNK_LOAD_DISTANCE + 1), 0);
-	int lowZ = std::max(cz - (CHUNK_LOAD_DISTANCE + 1), 0);
+	int lowX = std::max(cx - (chunkLoadDistance + 1), 0);
+	int lowY = std::max(cy - (chunkLoadDistance + 1), 0);
+	int lowZ = std::max(cz - (chunkLoadDistance + 1), 0);
 
 	//Get upper chunk iteration pos
-	int highX = std::min(cx + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCX);
-	int highY = std::min(cy + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCY);
-	int highZ = std::min(cz + (CHUNK_LOAD_DISTANCE + 1), metaHeader.SCZ);
+	int highX = std::min(cx + (chunkLoadDistance + 1), metaHeader.SCX);
+	int highY = std::min(cy + (chunkLoadDistance + 1), metaHeader.SCY);
+	int highZ = std::min(cz + (chunkLoadDistance + 1), metaHeader.SCZ);
 
 	// Check for loaded chunks to add to the draw list.
 	std::vector<std::pair<int, std::future<Resource<Chunk>>>>::iterator it;
@@ -54,13 +55,13 @@ void ChunkManager::Update(float dt)
 	nrOfTasks = chunkFutures.size();
 
 	//looping over high and low creates a box around the camera containing possible loaded/unloaded chunks. Go through these and do load/unload logic. 
-	//(Previously we looped through 500k chunks in a 512x2x512 level, this approach takes it down to worst case ish (CHUNK_LOAD_DISTANCE*2)^3 and in the case of 512x2x512 the worst case is (CHUNK_LOAD_DISTANCE*2)^2 * 2)
+	//(Previously we looped through 500k chunks in a 512x2x512 level, this approach takes it down to worst case ish (chunkLoadDistance*2)^3 and in the case of 512x2x512 the worst case is (chunkLoadDistance*2)^2 * 2)
 	for (int x = lowX; x < highX; ++x)
 		for (int y = lowY; y < highY; ++y)
 			for (int z = lowZ; z < highZ; ++z)
 			{
 				float dist = glm::distance(glm::vec3(x*metaHeader.CX, y*metaHeader.CY, z*metaHeader.CZ), camera->GetPosition());
-				if (dist < metaHeader.CX * CHUNK_LOAD_DISTANCE)
+				if (dist < metaHeader.CX * chunkLoadDistance)
 				{
 					AddChunk(x, y, z);
 				}
@@ -77,7 +78,7 @@ void ChunkManager::Update(float dt)
 		glm::vec3 displacement = camera->GetPosition() - glm::vec3(it->second->worldP);
 
 		float dist = glm::dot(displacement, displacement);
-		if (dist > (CHUNK_LOAD_DISTANCE*metaHeader.CX * CHUNK_LOAD_DISTANCE*metaHeader.CX))
+		if (dist > (chunkLoadDistance*metaHeader.CX * chunkLoadDistance*metaHeader.CX))
 		{
 			// Check if there is a chunk loaded
 			auto itdraw = std::find(drawList.begin(), drawList.end(), it->second);
@@ -169,7 +170,7 @@ int& ChunkManager::GetNrOfRenderedChunks()
 
 int& ChunkManager::GetViewRadius()
 {
-	return CHUNK_LOAD_DISTANCE;
+	return chunkLoadDistance;
 }
 
 int& ChunkManager::GetNrOfBlocks()
@@ -210,11 +211,22 @@ void ChunkManager::AddChunk(int x, int y, int z)
 	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
 	if (existMap.find(pos) == existMap.end())
 	{
-		chunkFutures.push_back(
-			std::pair<int, std::future<Resource<Chunk>>>(
-				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));	
+		int totalChunkCount = drawList.size() + chunkFutures.size();
 
-		existMap[pos] = Resource<Chunk>();
+		if (totalChunkCount < MAX_CHUNKS_IN_MEM)
+		{
+			chunkFutures.push_back(
+				std::pair<int, std::future<Resource<Chunk>>>(
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));
+
+			existMap[pos] = Resource<Chunk>();
+		}
+		else if (previousTotalChunkCount < MAX_CHUNKS_IN_MEM)
+		{
+			std::cerr << "Chunk limit reached! Number of chunks: " << drawList.size() << std::endl;
+		}
+
+		previousTotalChunkCount = totalChunkCount;
 	}
 }
 
