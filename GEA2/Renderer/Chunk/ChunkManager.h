@@ -49,7 +49,7 @@ private:
 		}
 	};
 
-	static const int CHUNK_LOAD_THREADS = 1;
+	static const int CHUNK_LOAD_THREADS = 4;
 	int CHUNK_LOAD_DISTANCE;
 
 	int nrOfChunks;
