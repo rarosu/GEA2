@@ -58,13 +58,14 @@ private:
 	int nrOfTasks;
 
 	ChunkResourceManager chunkResManager;
+	std::mutex mutex;
 	ThreadPool chunkLoadPool;
 	std::vector<std::pair<int, std::future<Resource<Chunk>>>> chunkFutures;
 	std::vector<Resource<Chunk>> drawList;
 	std::map<int, Resource<Chunk>> existMap;
 
 	Camera* camera;
-	std::mutex mutex;
+	
 
 	const MetaWorldHeader& metaHeader;
 };
