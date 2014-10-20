@@ -1,5 +1,6 @@
 #pragma once
 
+#include "../../ResourceManager/ShaderResourceManager.h"
 #include <glew.h>
 #include <glm.hpp>
 #include "ShaderProgram.h"
@@ -15,7 +16,7 @@ class Renderer
 {
 public:
 
-	Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height);
+	Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height, Filesystem* filesystem, MemoryAllocator* memoryAllocator);
 	~Renderer();
 
 	void Update(float dt);
@@ -27,9 +28,10 @@ public:
 
 private:
 
-	ShaderProgram	chunkProgram;
-	ShaderProgram	output;
-	ShaderProgram	outputWithSSAOBlur;
+	ShaderResourceManager shaderManager;
+	Resource<ShaderProgram>	chunkProgram;
+	Resource<ShaderProgram>	output;
+	Resource<ShaderProgram>	outputWithSSAOBlur;
 
 	Mesh			fullscreenquad;
 	Camera*			camera;
@@ -43,4 +45,5 @@ private:
 	bool			SSAOEnabled;
 
 	GLuint vao;
+	
 };

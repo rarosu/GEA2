@@ -10,6 +10,7 @@
 #include "Renderer/Chunk/ChunkManager.h"
 #include <Filesystem.h>
 #include <FilesystemArchive.h>
+#include <ZipArchive.h>
 
 const int WINDOW_WIDTH = 1280;
 const int WINDOW_HEIGHT = 720;
@@ -73,6 +74,8 @@ int main(int argc, char* argv[])
 
 	//Add files
 	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
+	filesystem.AddArchive<ZipArchive>("../Assets/Shaders.zip");
+	
 
 	std::string vWorldPath;
 	std::cout << "Enter world virtual path(no ext): " << std::endl;
@@ -84,7 +87,7 @@ int main(int argc, char* argv[])
 	SDL_GL_MakeCurrent(window, context);
 
 	//Initialize renderer
-	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
+	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT, &filesystem, &allocator);
 
 	//Initialize camera
 	camera.SetLens(45.0f, 0.5f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);

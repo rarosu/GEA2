@@ -2,12 +2,12 @@
 #include <glew.h>
 #include <glm.hpp>
 #include "Buffer.h"
-#include "ShaderProgram.h"
+#include "../../ResourceManager/ShaderResourceManager.h"
 
 class SSAO
 {
 public:
-	SSAO();
+	SSAO(ShaderResourceManager* shaderManager);
 	~SSAO();
 
 	void Init(unsigned windowWidth, unsigned windowHeight);
@@ -26,5 +26,6 @@ private:
 	GLuint outTexture;
 	GLuint fbo;
 
-	ShaderProgram ssaoShader;
+	ShaderResourceManager* shaderManager;
+	Resource<ShaderProgram> ssaoShader;
 };

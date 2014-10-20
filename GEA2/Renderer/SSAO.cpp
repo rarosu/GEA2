@@ -1,9 +1,11 @@
 #include "SSAO.h"
 #include <ctime>
 
-SSAO::SSAO()
+SSAO::SSAO(ShaderResourceManager* shaderManager)
 	: kernelBuffer(GL_UNIFORM_BUFFER)
-{}
+{
+	this->shaderManager = shaderManager;
+}
 
 SSAO::~SSAO()
 {
@@ -62,7 +64,7 @@ void SSAO::Init(unsigned windowWidth, unsigned windowHeight)
 
 	kernelBuffer.BufferData((size_t)kernelSize, sizeof(glm::vec4), &kernelSamples[0], GL_DYNAMIC_DRAW);
 
-	ssaoShader.CreateProgram("../Assets/Shaders/SSAO");
+	ssaoShader = shaderManager->Load("SSAO");
 }
 
 
@@ -73,7 +75,7 @@ float SSAO::Random(float p_low, float p_high)
 
 void SSAO::Bind()
 {
-	ssaoShader.Use();
+	ssaoShader->Use();
 	glDepthMask(GL_FALSE);
 	glDisable(GL_DEPTH_TEST);
 	glBindFramebuffer(GL_FRAMEBUFFER, fbo);

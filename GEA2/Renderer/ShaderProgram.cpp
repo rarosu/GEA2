@@ -5,11 +5,6 @@
 #include <string>
 #include <vector>
 
-ShaderProgram::ShaderProgram(const char* shaderProgramPath)
-{
-	CreateProgram(shaderProgramPath);
-}
-
 ShaderProgram::ShaderProgram()
 {
 
@@ -26,18 +21,15 @@ GLuint ShaderProgram::GetHandle()
 	return programHandle;
 }
 
-bool ShaderProgram::CreateProgram(const char* shaderProgramPath)
+bool ShaderProgram::CreateProgram(const char* shaderProgramPath, char* data, size_t size, Filesystem* filesystem)
 {
 	//Create file stream and open
 	std::string tPath = shaderProgramPath;
 	std::string folderPath = tPath.substr(0, tPath.find_last_of("/") + 1);
 	tPath.append(".sp");
-	std::ifstream shaderProgramFile(tPath);
-	if(!shaderProgramFile.is_open())
-	{
-		std::cout << "Failed to to open shader program file!" << "[" <<__FUNCTION__ << ", line " << __LINE__ << "]" << std::endl;
-		return false;
-	}
+
+	CharBuffer buf(data, data + size);
+	std::istream shaderProgramFile(&buf);
 
 	//Read .sp file to find out what shaders should be created. Create them and store all shader handles in vector for later attachment and linking
 	std::string shaderProgSource;
@@ -58,7 +50,7 @@ bool ShaderProgram::CreateProgram(const char* shaderProgramPath)
 			shaderName.append(".vert");
 			shaderPath.append(shaderName);
 
-			GLuint shader = CreateShader(GL_VERTEX_SHADER, shaderPath.c_str());
+			GLuint shader = CreateShader(GL_VERTEX_SHADER, shaderPath.c_str(), filesystem);
 			if(shader != GL_FALSE)
 				shaderHandles.push_back(shader);
 		}
@@ -70,7 +62,7 @@ bool ShaderProgram::CreateProgram(const char* shaderProgramPath)
 			shaderName.append(".frag");
 			shaderPath.append(shaderName);
 
-			GLuint shader = CreateShader(GL_FRAGMENT_SHADER, shaderPath.c_str());
+			GLuint shader = CreateShader(GL_FRAGMENT_SHADER, shaderPath.c_str(), filesystem);
 			if(shader != GL_FALSE)
 				shaderHandles.push_back(shader);
 		}
@@ -119,7 +111,7 @@ bool ShaderProgram::CreateProgram(const char* shaderProgramPath)
 	return true;
 }
 
-GLuint ShaderProgram::CreateShader(GLenum shaderType, const char* shaderPath)
+GLuint ShaderProgram::CreateShader(GLenum shaderType, const char* shaderPath, Filesystem* filesystem)
 {
 	//Create shader and check for errors
 	GLuint shaderHandle = glCreateShader (shaderType);
@@ -129,28 +121,30 @@ GLuint ShaderProgram::CreateShader(GLenum shaderType, const char* shaderPath)
 		return GL_FALSE;
 	}
 	//Create stream, check errors
-	std::ifstream shaderFile(shaderPath);
-	if(!shaderFile.is_open())
+
+	char* filedata;
+	size_t filesize;
+
 	{
-		std::cout << "Failed to open shader file: " << shaderPath <<" [" <<__FUNCTION__ << ", line " << __LINE__ << "]" << std::endl;
-		return GL_FALSE;
+		std::shared_ptr<File> file = filesystem->GetFile(shaderPath);
+
+		if (file == nullptr)
+		{
+			std::cout << "Failed to open shader file: " << shaderPath << " [" << __FUNCTION__ << ", line " << __LINE__ << "]" << std::endl;
+			return GL_FALSE;
+		}
+			
+		filesize = file->GetFileSize();
+		filedata = new char[filesize + 1];
+		file->Read(filedata, filesize);
+		filedata[filesize] = '\0';
 	}
 
-	//Get the size of the file
-	shaderFile.seekg(0,std::ios::end);
-	std::streampos length = shaderFile.tellg();
-	shaderFile.seekg(0,std::ios::beg);
-
-	//Resize buffer and read shader source
-	std::string buffer;
-	buffer.resize((unsigned int)length);
-	shaderFile.read(&buffer[0], length);
-
-	//Load source into char array
-	const char* source = buffer.c_str();
-
 	//Set shader source and compile
-	glShaderSource (shaderHandle, 1, &source, NULL);
+	glShaderSource(shaderHandle, 1, &filedata, NULL);
+	
+	delete[] filedata;
+
 	glCompileShader (shaderHandle);
 
 	//Compilation error checking

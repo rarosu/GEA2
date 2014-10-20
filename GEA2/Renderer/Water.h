@@ -3,7 +3,7 @@
 #include <glm.hpp>
 #include <string>
 #include "Mesh.h"
-#include "ShaderProgram.h"
+#include "../../ResourceManager/ShaderResourceManager.h"
 #include "Texture.h"
 #include "Buffer.h"
 
@@ -11,7 +11,7 @@ class Water
 {
 public:
 
-	Water();
+	Water(ShaderResourceManager* shaderManager);
 	~Water();
 
 	void Init(int windowWidth, int windowHeight, GLuint depthTex, GLuint colorTex);
@@ -38,5 +38,6 @@ private:
 
 	Buffer timeBuf;
 	Mesh waterQuad;
-	ShaderProgram waterShader;
+	ShaderResourceManager* shaderManager;
+	Resource<ShaderProgram> waterShader;
 };

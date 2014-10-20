@@ -7,8 +7,8 @@ void APIENTRY PrintOpenGLError(GLenum source, GLenum type, GLuint id, GLenum sev
 }
 #endif
 
-Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height)
-	: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false)
+Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height, Filesystem* filesystem, MemoryAllocator* memoryAllocator)
+: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false), shaderManager(filesystem, memoryAllocator), ssao(&shaderManager), water(&shaderManager)
 {
 
 #if defined(_DEBUG)
@@ -26,11 +26,13 @@ Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, 
 	}
 #endif
 
+
+
 	//Create chunk rendering shader program
-	chunkProgram.CreateProgram("../Assets/Shaders/Cube");
+	chunkProgram = shaderManager.Load("Cube");
 	//Create fullscreen quad output shader program
-	output.CreateProgram("../Assets/Shaders/Fullscreenquad");
-	outputWithSSAOBlur.CreateProgram("../Assets/Shaders/FullscreenquadWithBlur");
+	output = shaderManager.Load("Fullscreenquad");
+	outputWithSSAOBlur = shaderManager.Load("FullscreenquadWithBlur");
 	//Set up a full screen quad for output shader
 	Vertex fullscreenQuadV[] = 
 	{
@@ -92,7 +94,7 @@ void Renderer::Draw()
 
 	//Bind texture atlas(block textures)
 	textureAtlas.Bind(0);
-	chunkProgram.Use();
+	chunkProgram->Use();
 	glBindVertexArray(vao);
 	//Render all chunks
 	chunkManager->Draw();
@@ -132,10 +134,10 @@ void Renderer::Draw()
 	if (SSAOEnabled)
 	{
 		ssao.BindTexForRead(4);
-		outputWithSSAOBlur.Use();
+		outputWithSSAOBlur->Use();
 	}
 	else
-		output.Use();
+		output->Use();
 
 	//Output gbuffer color to fullscreen quad
 	fullscreenquad.Draw();

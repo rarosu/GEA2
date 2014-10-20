@@ -1,10 +1,10 @@
 #include "Water.h"
 #include <iostream>
 
-Water::Water()
-	: timeBuf(GL_UNIFORM_BUFFER), time(0)
+Water::Water(ShaderResourceManager* shaderManager)
+	: timeBuf(GL_UNIFORM_BUFFER), time(0) 
 {
-
+	this->shaderManager = shaderManager;
 }
 
 Water::~Water()
@@ -35,7 +35,7 @@ void Water::Init(int windowWidth, int windowHeight, GLuint depthTex, GLuint colo
 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	waterShader.CreateProgram("../Assets/Shaders/Water");
+	waterShader = shaderManager->Load("Water");
 
 	float waterheight = 12.5f;
 	Vertex waterQuadV[] =
@@ -64,7 +64,7 @@ void Water::Draw()
 {
 	Bind();
 	normalTexture.Bind(0);
-	waterShader.Use();
+	waterShader->Use();
 	timeBuf.BufferSubData(0, sizeof(float), &time);
 	glBindBufferBase(GL_UNIFORM_BUFFER, 1, timeBuf.GetBufferId());
 	waterQuad.Draw();
