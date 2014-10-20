@@ -3,7 +3,10 @@
 #include <SDL.h>
 #include <glm.hpp>
 #include <glew.h>
+
+#ifndef SIXTYFOUR_BIT
 #include <AntTweakBar.h>
+#endif
 
 #include "Renderer/Renderer.h"
 #include "Renderer/Camera.h"
@@ -21,7 +24,11 @@ Camera camera;
 Renderer* renderer;
 SDL_Window* window;
 SDL_GLContext context;
+
+#ifndef SIXTYFOUR_BIT
 TwBar* antbar;
+#endif
+
 ChunkManager* chunkManager;
 Filesystem filesystem;
 MemoryAllocator allocator;
@@ -68,9 +75,13 @@ int main(int argc, char* argv[])
 	glDepthRange(-1, 1);
 	IMG_Init(IMG_INIT_PNG | IMG_INIT_JPG);
 
+#ifndef SIXTYFOUR_BIT
+	// AntTweakBar (only available in 32-bit)
 	TwInit(TW_OPENGL_CORE, NULL);
 	TwWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	antbar = TwNewBar("GEABar");
+#endif
+
 
 	//Add files
 	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
@@ -94,6 +105,7 @@ int main(int argc, char* argv[])
 
 	float fps = 0;
 
+#ifndef SIXTYFOUR_BIT
 	//Set up some anttweakbar bars
 	TwAddVarRW(antbar, "View radius", TW_TYPE_INT32, &(chunkManager->GetViewRadius()), "min=0 max=2000000000");
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
@@ -103,6 +115,8 @@ int main(int argc, char* argv[])
 	TwAddVarRO(antbar, "Tasks", TW_TYPE_INT32, &(chunkManager->GetNrOfTasks()), "");
 	TwAddVarRW(antbar, "Collision", TW_TYPE_BOOLCPP, &collision, "");
 	TwAddVarRW(antbar, "Physics", TW_TYPE_BOOLCPP, &camera.GetPhysics(), "");
+#endif
+
 
 	//Timer
 	uint32_t oldTime, currentTime;
@@ -189,15 +203,22 @@ int main(int argc, char* argv[])
 
 		//Render all the things!
 		renderer->Draw();
+
+#ifndef SIXTYFOUR_BIT
 		TwRefreshBar(antbar);
 		TwDraw();
+#endif
+
 		SDL_GL_SwapWindow(window);
 	}
 
 	delete chunkManager;
 	delete renderer;
 	
+#ifndef SIXTYFOUR_BIT
 	TwTerminate();
+#endif
+
 	IMG_Quit();
 	SDL_GL_DeleteContext(context);
 	SDL_DestroyWindow(window);
@@ -209,7 +230,9 @@ bool HandleEvents()
 	SDL_Event e;
 	while (SDL_PollEvent(&e))
 	{
+#ifndef SIXTYFOUR_BIT
 		TwEventSDL(&e, SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+#endif
 
 		switch (e.type)
 		{
@@ -256,7 +279,9 @@ bool HandleEvents()
 						int h = e.window.data2;
 
 						glViewport(0, 0, w, h);
+#ifndef SIXTYFOUR_BIT
 						TwWindowSize(w, h);
+#endif
 						camera.SetLens(45.0f, 0.01f, 1000.0f, w, h);
 						renderer->Resize(w, h);
 
