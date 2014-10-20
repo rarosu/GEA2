@@ -86,6 +86,8 @@ int main(int argc, char* argv[])
 	//Initialize renderer
 	renderer = new Renderer(&camera, chunkManager, WINDOW_WIDTH, WINDOW_HEIGHT);
 
+	chunkManager->SetupBuffers();
+
 	//Initialize camera
 	camera.SetLens(45.0f, 0.5f, 1000.0f, WINDOW_WIDTH, WINDOW_HEIGHT);
 

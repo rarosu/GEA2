@@ -56,7 +56,8 @@ public:
 	Buffer* vertexBuffer;
 	Vertex* vertices;
 
-
+	GLuint buffer;
+	int id;
 
 private:
 

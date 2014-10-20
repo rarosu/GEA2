@@ -9,11 +9,23 @@ ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, C
 	CHUNK_LOAD_DISTANCE = 16;
 	nrOfRenderedChunks = 0;
 	drawList.reserve(MAX_CHUNKS_IN_MEM);
-	
 }
 
 ChunkManager::~ChunkManager()
 {
+}
+
+
+void ChunkManager::SetupBuffers()
+{
+	glGenBuffers(NUM_VERTEX_BUFFERS, buffers);
+	for (int i = 0; i < NUM_VERTEX_BUFFERS; i++)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, buffers[i]);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex) * 11000, 0, GL_DYNAMIC_DRAW);
+	}
+
+	currentId = 0;
 }
 
 void ChunkManager::Update(float dt)
@@ -45,8 +57,25 @@ void ChunkManager::Update(float dt)
 			{
 				if (chunk->numberOfElements > 0)
 				{
-					chunk->vertexBuffer = new Buffer(GL_ARRAY_BUFFER);
-					chunk->vertexBuffer->BufferData(chunk->numberOfElements, sizeof(Vertex), chunk->vertices, GL_DYNAMIC_DRAW);
+					int id;
+					if (recyledIds.size() > 0)
+					{
+						id = recyledIds.front();
+						recyledIds.pop();
+					}
+					else
+					{
+						id = currentId++;
+						
+					}
+					assert(id < NUM_VERTEX_BUFFERS);
+
+					chunk->id = id;
+					chunk->buffer = buffers[id];
+					//printf("Building chunk id %d buffer %d\n", chunk->id, chunk->buffer);
+					glBindBuffer(GL_ARRAY_BUFFER, chunk->buffer);
+					glBufferSubData(GL_ARRAY_BUFFER, 0, chunk->numberOfElements * sizeof(Vertex), chunk->vertices);
+
 					delete[] chunk->vertices;
 					drawList.push_back(chunk);
 				}
@@ -94,7 +123,8 @@ void ChunkManager::Update(float dt)
 			auto itdraw = std::find(drawList.begin(), drawList.end(), it->second);
 			if (itdraw != drawList.end())
 			{
-				delete (*itdraw)->vertexBuffer;
+				recyledIds.push((*itdraw)->id);
+
 				drawList.erase(itdraw);
 			}
 
@@ -123,7 +153,7 @@ void ChunkManager::Draw()
 			continue;
 		++nrOfRenderedChunks;
 
-		glBindVertexBuffer(0, chunk->vertexBuffer->GetBufferId(), 0, chunk->vertexBuffer->GetElementSize());
+		glBindVertexBuffer(0, chunk->buffer, 0, sizeof(Vertex));
 
 		glDrawArrays(GL_TRIANGLES, 0, chunk->numberOfElements);
 		

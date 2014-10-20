@@ -14,6 +14,7 @@ class ChunkManager
 public:
 	ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, Camera* pcamera, const std::string& vWorldPath);
 	~ChunkManager();
+	void SetupBuffers();
 	uint8_t Get(const glm::vec3& pos);
 	uint8_t Get(int x, int y, int z);
 	void Set(int x, int y, int z, uint8_t type);
@@ -32,9 +33,6 @@ public:
 	//Quick and dirty block destroyer, remove if needed
 	void DestroyBlock();
 
-	
-	
-
 private:
 	struct LoadChunkTask
 	{
@@ -49,6 +47,8 @@ private:
 	};
 
 	static const int CHUNK_LOAD_THREADS = 4;
+	static const int NUM_VERTEX_BUFFERS = (1 << 15);
+
 	int CHUNK_LOAD_DISTANCE;
 
 	int nrOfChunks;
@@ -66,4 +66,8 @@ private:
 	std::mutex mutex;
 
 	const MetaWorldHeader& metaHeader;
+
+	GLuint buffers[NUM_VERTEX_BUFFERS];
+	std::queue<int> recyledIds;
+	int currentId;
 };
