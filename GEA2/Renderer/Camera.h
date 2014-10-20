@@ -23,6 +23,7 @@ public:
 	void SetPosition(const glm::vec3& pos);
 	void Pitch(float angle);
 	void Yaw(float angle);
+	void Roll(float angle);
 
 	CameraStruct&	GetCameraStruct();
 	glm::vec3&		GetPosition();

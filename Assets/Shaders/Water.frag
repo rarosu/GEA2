@@ -26,6 +26,8 @@ layout(binding = 1, std140) uniform Time
 	float time;
 };
 
+const vec3 g_dirToSunWorld = vec3(0.7, 1.0, 0.8);
+
 float Fresnel(float p_dot, float p_fresnelBias, float p_fresnelPow)
 {
 	float facing = (1.0 - p_dot);
@@ -76,5 +78,17 @@ void main()
 
 	result = mix(waterColor, vec3(135.0/255.0, 206.0/255.0, 1.0), clamp(fresnel, 0.0, 0.3));
 
-	color = result;
+	///////////////////////////////////////////////////////////////////////////
+	//Light
+	//////////////////////////////////////////////////////////////////////////
+
+	vec3 lightDirection	    = normalize(g_dirToSunWorld);
+	vec3 eyeDirection 		= normalize(out_posW - camPos);
+	eyeDirection			= reflect(eyeDirection, normalize(normal));
+    
+    float lightPower = pow(clamp(dot(eyeDirection, lightDirection), 0.0, 1.0), 256.0);
+
+	vec3 specularColor 	= vec3(1.0, 1.0, 1.0) * round(lightPower);
+
+	color = result + specularColor;
 }

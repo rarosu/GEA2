@@ -1,6 +1,6 @@
 solution "GEA2"
 	configurations { "Debug", "Release" }
-	platforms { "x32" }
+	platforms { "x32", "x64" }
 	
 	location "Build"
 	targetdir "Bin"
