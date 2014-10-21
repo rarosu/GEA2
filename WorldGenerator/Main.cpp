@@ -8,11 +8,15 @@
 int SCX, SCY, SCZ, CX, CY, CZ;
 
 int Export(const char* fileName);
+void GenerateTest(int ax, int ay, int az, unsigned char* blockData);
 
 int main(int argc, char* argv[])
 {
 	std::cout << "World Generator v1.0!" << std::endl;
 	std::string filename;
+
+	//GenerateTest(0, 0, 0, nullptr);
+
 	while (1)
 	{
 		std::cout << "Enter desired file name(no extension):" << std::endl;
@@ -125,6 +129,77 @@ static float noise3d_abs(float x, float y, float z, int octaves, float persisten
 	return sum;
 }
 
+void GenerateTest(int ax, int ay, int az, unsigned char* blockData)
+{
+	//CX = CY = CZ = 16;
+	for (int x = 0; x < CX; x++)
+	{
+		for (int z = 0; z < CZ; z++)
+		{
+			float n = noise2d((x + ax * CX) / 256.0f, (z + az * CZ) / 256.0f, 5, 0.8f) - 26;
+			int h = (int)(n * 2);
+
+			for (int y = 0; y < CY; y++)
+			{
+				//Set sand layer on bottom
+				if (y + ay * CY == 0)
+				{
+					Set(x, y, z, 3, blockData);
+					continue;
+				}
+				//If heightmap is below water, set sand to create lake bottom
+				if (y + ay * CY >= h && y + ay * CY < 12)
+				{
+					Set(x, y, z, 3, blockData);
+					break;
+				}
+				//Create trees if over heightmap
+				if (y + ay * CY >= h)
+				{
+					int random;
+					if (y + ay * CY < 24) //increase chance of tree generation if closer to water
+						random = rand() % 20;
+					else
+						random = rand() % 50;
+					// A tree!
+					if (Get(x, y - 1, z, blockData) == 1 && random == 0 && y < CY - 8 && z > 2 && z < CZ - 3 && x > 2 && x < CX - 3)
+					{
+						// Trunk
+						h = (rand() & 0x3) + 3;
+						for (int i = 0; i < h; i++)
+							Set(x, y + i, z, 5, blockData);
+
+						// Leaves
+						for (int ix = -3; ix <= 3; ix++)
+						{
+							for (int iy = -3; iy <= 3; iy++)
+							{
+								for (int iz = -3; iz <= 3; iz++)
+								{
+									if (ix * ix + iy * iy + iz * iz < 8 + (rand() & 1) && !Get(x + ix, y + h + iy, z + iz, blockData))
+										Set(x + ix, y + h + iy, z + iz, 4, blockData);
+								}
+							}
+						}
+					}
+					break;
+				}
+				//Get 3D simplex value
+				float r = glm::simplex<float>(glm::vec3((x + ax * CX) / 16.0f, (y + ay * CY) / 16.0f, (z + az * CZ) / 16.0f));
+				//If simplex value is lower than 4, set air. Else set dirt, or grass if at the top of the heighmap
+				uint8_t blockID = (uint8_t)glm::floor((r * 0.5f + 0.5f) * 8.0f) < 4 ? 0 : (y + ay * CY < h - 1) ? 2 : 1;
+				//Set block below to grass if this block is air
+				if (Get(x, y - 1, z, blockData) == 2 && blockID == 0)
+					Set(x, y - 1, z, 1, blockData);
+				else if (blockID != 0 && y + ay * CY < 12)// Set sand if below water
+					Set(x, y, z, 3, blockData);
+				else
+					Set(x, y, z, blockID, blockData); //Set the value from 3D simplex
+			}
+		}
+	}
+}
+
 //Chunk data generation
 void Generate(int ax, int ay, int az, unsigned char* blockData)
 {
@@ -193,39 +268,6 @@ void Generate(int ax, int ay, int az, unsigned char* blockData)
 			}
 		}
 	}
-	/*
-	for (int x = 0; x < CX; x++)
-	{
-		for (int z = 0; z < CZ; z++)
-		{
-			for (int y = 0; y < CY; y++)
-			{
-				if (Get(x, y, z, blockData) == 7)
-				{
-					int loX = x - 6; 
-					int loY = y - 6;
-					int loZ = z - 6;
-
-					int hiX = x + 6;
-					int hiY = y + 6;
-					int hiZ = z + 6;
-
-					for (int x1 = loX; x1 < hiX; x1++)
-					{
-						for (int z1 = loZ; z1 < hiZ; z1++)
-						{
-							for (int y1 = loY; y1 < hiY; y1++)
-							{
-								int dist = (x1 - x)*(x1 - x) + (y1 - y)*(y1 - y) + (z1 - z)*(z1 - z);
-								if (dist < 25)
-									Set(x1, y1, z1, 0, blockData);
-							}
-						}
-					}
-				}
-			}
-		}
-	}*/
 }
 
 int Export(const char* fileName)
@@ -312,7 +354,7 @@ int Export(const char* fileName)
 
 				//Generate chunkdata into array for compression
 				Generate(x, y, z, chunkData);
-
+				//GenerateTest(x, y, z, chunkData);
 				//Compress!
 				header[i].size = RLE_Compress(chunkData, compressed, numberOfBlocksPerChunk);
 				
