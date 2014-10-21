@@ -8,7 +8,7 @@ void APIENTRY PrintOpenGLError(GLenum source, GLenum type, GLuint id, GLenum sev
 #endif
 
 Renderer::Renderer(Camera* camera, ChunkManager* pchunkManager, unsigned width, unsigned height, Filesystem* filesystem, MemoryAllocator* memoryAllocator)
-: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false), shaderManager(filesystem, memoryAllocator), ssao(&shaderManager), water(&shaderManager)
+: camera(camera), cameraBuffer(GL_UNIFORM_BUFFER), chunkManager(pchunkManager), SSAOEnabled(false), waterEnabled(true), shaderManager(filesystem, memoryAllocator), ssao(&shaderManager), water(&shaderManager)
 {
 
 #if defined(_DEBUG)
@@ -121,11 +121,14 @@ void Renderer::Draw()
 		ssao.Unbind();
 	}
 
-	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_COLOR);
-	gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_DEPTH);
+	if (waterEnabled)
+	{
+		gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_COLOR);
+		gbuffer.UnbindTexture(GBuffer::GBUFFER_TEXTURE_DEPTH);
 
-	water.Draw();
-	water.BindFullscreenTexForRead(0);
+		water.Draw();
+		water.BindFullscreenTexForRead(0);
+	}
 
 	//Bind default window frame buffer for output to backbuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -151,6 +154,7 @@ void Renderer::Resize(unsigned width, unsigned height)
 {
 	//Resize textures in framebuffer, call this from resize event in SDL2 event loop
 	gbuffer.Resize(width, height);
+	ssao.Resize(width, height);
 }
 
 bool& Renderer::GetSSAOFlag()
@@ -158,8 +162,14 @@ bool& Renderer::GetSSAOFlag()
 	return SSAOEnabled;
 }
 
+bool& Renderer::GetWaterFlag()
+{
+	return waterEnabled;
+}
+
 void Renderer::Update(float dt)
 {
 	water.Update(dt);
 }
+
 

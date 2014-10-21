@@ -109,3 +109,15 @@ void SSAO::UnbindTexForRead(int slot)
 	glBindTexture(GL_TEXTURE_2D, 0);
 }
 
+void SSAO::Resize(unsigned windowWidth, unsigned windowHeight)
+{
+	glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+	glBindTexture(GL_TEXTURE_2D, outTexture);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, windowWidth, windowHeight, 0, GL_RGB, GL_FLOAT, 0);
+	glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, outTexture, 0);
+}
+

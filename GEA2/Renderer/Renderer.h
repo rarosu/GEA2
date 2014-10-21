@@ -25,6 +25,7 @@ public:
 	void Resize(unsigned width, unsigned height);
 
 	bool& GetSSAOFlag();
+	bool& GetWaterFlag();
 
 private:
 
@@ -43,6 +44,7 @@ private:
 	Water			water;
 
 	bool			SSAOEnabled;
+	bool			waterEnabled;
 
 	GLuint vao;
 	

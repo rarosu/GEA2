@@ -33,11 +33,18 @@ PUBLIC:
 	bool operator!=(const T* resource) const;
 	bool operator!=(const Resource<T>& resource) const;
 
+	T* Get();
 PRIVATE:
 	T* resource;
 	InternalResource<T>* internal;
 	DestructorFunction destructor;
 };
+
+template <typename T>
+T* Resource<T>::Get()
+{
+	return resource;
+}
 
 template <typename T>
 Resource<T>::Resource()

@@ -194,18 +194,6 @@ int& ChunkManager::GetNrOfTasks()
 	return nrOfTasks;
 }
 
-/*void ChunkManager::AddChunk(int x, int y, int z)
-{
-	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
-	if (existMap.find(pos) == existMap.end())
-	{
-		Resource<Chunk> chunk = chunkResManager.Load(x, y, z);
-
-		drawList.push_back(chunk);
-		existMap[pos] = chunk;
-	}
-}*/
-
 void ChunkManager::AddChunk(int x, int y, int z)
 {
 	int pos = metaHeader.SCZ * metaHeader.SCY * x + metaHeader.SCZ * y + z;
@@ -217,7 +205,7 @@ void ChunkManager::AddChunk(int x, int y, int z)
 		{
 			chunkFutures.push_back(
 				std::pair<int, std::future<Resource<Chunk>>>(
-				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z)));
+				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z, this)));
 
 			existMap[pos] = Resource<Chunk>();
 		}
@@ -253,4 +241,9 @@ void ChunkManager::DestroyBlock()
 		}
 		pos += dir*0.5f;
 	}
+}
+
+std::map<int, Resource<Chunk>>* ChunkManager::GetExistMap()
+{
+	return &existMap;
 }

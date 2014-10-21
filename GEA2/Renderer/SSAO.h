@@ -16,6 +16,8 @@ public:
 
 	void BindTexForRead(int slot);
 	void UnbindTexForRead(int slot);
+
+	void Resize(unsigned windowWidth, unsigned windowHeight);
 private:
 
 	float Random(float p_low, float p_high);

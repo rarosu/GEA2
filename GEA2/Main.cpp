@@ -56,8 +56,6 @@ int main(int argc, char* argv[])
 	SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, flags);
-	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-	//SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 4);
 
 	context = SDL_GL_CreateContext(window);
 
@@ -83,12 +81,10 @@ int main(int argc, char* argv[])
 	antbar = TwNewBar("GEABar");
 #endif
 
-
 	//Add files
 	filesystem.AddArchive<FilesystemArchive>("../Assets/Worlds/");
 	filesystem.AddArchive<ZipArchive>("../Assets/Shaders.zip");
 	
-
 	std::string vWorldPath;
 	std::cout << "Enter world virtual path(no ext): " << std::endl;
 	std::cin >> vWorldPath;
@@ -115,6 +111,7 @@ int main(int argc, char* argv[])
 	TwAddVarRW(antbar, "Camspeed", TW_TYPE_FLOAT, &(camera.GetSpeed()), " label='Camera move speed' min=0 max=500 help='Displays the speed of the camera in blocks per second.' ");
 	TwAddVarRO(antbar, "FPS", TW_TYPE_FLOAT, &fps, " label='FPS'");
 	TwAddVarRW(antbar, "SSAO", TW_TYPE_BOOLCPP, &(renderer->GetSSAOFlag()), "");
+	TwAddVarRW(antbar, "Water", TW_TYPE_BOOLCPP, &(renderer->GetWaterFlag()), "");
 	TwAddVarRO(antbar, "Rendered chunks", TW_TYPE_INT32, &(chunkManager->GetNrOfRenderedChunks()), "");
 	TwAddVarRO(antbar, "Tasks", TW_TYPE_INT32, &(chunkManager->GetNrOfTasks()), "");
 	TwAddVarRW(antbar, "Collision", TW_TYPE_BOOLCPP, &collision, "");
@@ -270,6 +267,12 @@ bool HandleEvents()
 					
 					camera.Pitch(pitch);
 					camera.Yaw(yaw);
+				}
+				else if (e.motion.state & SDL_BUTTON_RMASK)
+				{
+					float roll = (float)e.motion.xrel / 10.0f;
+
+					camera.Roll(roll);
 				}
 			} break;
 			case SDL_WINDOWEVENT:
