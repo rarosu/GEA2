@@ -48,7 +48,6 @@ private:
 
 			if (chunk != nullptr)
 			{
-				//Add neighbours to new chunk, not rebuilding neighbours, but still gives ~20% performance boost
 				//Get pointer to exist map
 				std::map<int, Resource<Chunk>>* existMap = loadedChunks->GetExistMap();
 
@@ -64,6 +63,8 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->right = it->second.Get();
+						//chunk->right->left = chunk.Get();
+						//chunk->right->UpdateChunk(mutex);
 					}
 				}
 
@@ -79,6 +80,8 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->left = it->second.Get();
+						//chunk->left->right = chunk.Get();
+						//chunk->left->UpdateChunk(mutex);
 					}
 				}
 
@@ -94,6 +97,8 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->front = it->second.Get();
+						//chunk->front->back = chunk.Get();
+						//chunk->front->UpdateChunk(mutex);
 					}
 				}
 
@@ -109,6 +114,8 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->back = it->second.Get();
+						//chunk->back->front = chunk.Get();
+						//chunk->back->UpdateChunk(mutex);
 					}
 				}
 
@@ -124,6 +131,8 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->above = it->second.Get();
+						//chunk->above->below = chunk.Get();
+						//chunk->above->UpdateChunk(mutex);
 					}
 				}
 
@@ -139,9 +148,11 @@ private:
 					if (it->second != nullptr)
 					{
 						chunk->below = it->second.Get();
+						//chunk->below->above = chunk.Get();
+						//chunk->below->UpdateChunk(mutex);
 					}
 				}
-				
+
 				chunk->UpdateChunk(mutex);
 			}
 			
