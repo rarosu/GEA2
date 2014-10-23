@@ -25,26 +25,23 @@ PUBLIC:
 	~Resource();
 
 	T* operator->();
+	const T* operator->() const;
 	T& operator*();
+	const T& operator*() const;
 	Resource<T>& operator=(const Resource<T>& resource);
+
+	T* Get();
+	const T* Get() const;
 
 	bool operator==(const T* resource) const;
 	bool operator==(const Resource<T>& resource) const;
 	bool operator!=(const T* resource) const;
 	bool operator!=(const Resource<T>& resource) const;
-
-	T* Get();
 PRIVATE:
 	T* resource;
 	InternalResource<T>* internal;
 	DestructorFunction destructor;
 };
-
-template <typename T>
-T* Resource<T>::Get()
-{
-	return resource;
-}
 
 template <typename T>
 Resource<T>::Resource()
@@ -92,9 +89,33 @@ T* Resource<T>::operator->()
 }
 
 template <typename T>
+const T* Resource<T>::operator->() const
+{
+	return this->resource;
+}
+
+template <typename T>
 T& Resource<T>::operator*()
 {
 	return *this->resource;
+}
+
+template <typename T>
+const T& Resource<T>::operator*() const
+{
+	return *this->resource;
+}
+
+template <typename T>
+T* Resource<T>::Get()
+{
+	return resource;
+}
+
+template <typename T>
+const T* Resource<T>::Get() const
+{
+	return resource;
 }
 
 
