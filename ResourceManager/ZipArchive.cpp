@@ -131,11 +131,13 @@ size_t ZipArchiveFile::Read(void* ptr, size_t byteCount)
 
 bool ZipArchiveFile::Seek(long int offset, File::Origin origin)
 {
+	std::cerr << "Seek is not supported for ZipArchive" << std::endl;
 	return false;
 }
 
 long int ZipArchiveFile::Tell()
 {
+	std::cerr << "Tell is not supported for ZipArchive" << std::endl;
 	return 0;
 }
 
