@@ -1,2 +1,0 @@
-VERTEX Fullscreenquad
-FRAGMENT Fullscreenquad

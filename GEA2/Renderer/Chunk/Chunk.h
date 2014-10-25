@@ -61,4 +61,12 @@ private:
 	
 	int GetBlockArrayIndex(int x, int y, int z);
 
+	float x0[16];
+	float x1[16];
+	float y0[16];
+	float y1[16];
+	float ys0[16];
+	float ys1[16];
+	float yb0[16];
+	float yb1[16];
 };

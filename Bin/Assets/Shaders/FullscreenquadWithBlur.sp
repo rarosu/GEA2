@@ -1,2 +1,0 @@
-VERTEX FullscreenquadWithBlur
-FRAGMENT FullscreenquadWithBlur
