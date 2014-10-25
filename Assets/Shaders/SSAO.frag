@@ -25,7 +25,7 @@ layout(binding = 1, std140) uniform SampleKern
 
 const float uRadius = 1.5;
 const float uPower = 2.0;
-const int uSampleKernelSize = 16;
+const int uSampleKernelSize = 4;
 
 void main()
 {
