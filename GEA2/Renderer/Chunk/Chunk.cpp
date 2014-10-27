@@ -53,7 +53,9 @@ void Chunk::UpdateChunk(std::mutex* mutex)
 {
 	changed = false;
 
-	Vertex* vertices = new Vertex[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ * 36];
+	Vertex* vertices = new(std::nothrow) Vertex[metaWorldHeader.CX * metaWorldHeader.CY * metaWorldHeader.CZ];
+	if (vertices == nullptr)
+		std::cerr << "Bad Alloc in allocating vertices.." << std::endl;
 	int i = 0;
 	int merged = 0;
 	bool vis = false;

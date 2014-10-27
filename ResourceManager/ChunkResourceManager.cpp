@@ -117,8 +117,10 @@ Resource<Chunk> ChunkResourceManager::Load(int x, int y, int z)
 
 		//Create array, seek to chunk in file, read compressed data to mem
 		uint8_t* compressed = new(std::nothrow) uint8_t[header[i].size];
-		if (compressed == nullptr)
+		if (compressed == nullptr) {
+			std::cerr << "bad alloc header" << std::endl;
 			return Resource<Chunk>();
+		}
 
 		{
 			std::lock_guard<std::mutex> lock(mutex);
