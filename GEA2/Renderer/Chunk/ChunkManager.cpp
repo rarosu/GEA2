@@ -11,6 +11,12 @@ ChunkManager::ChunkManager(Filesystem* filesystem, MemoryAllocator* allocator, C
 	nrOfRenderedChunks = 0;
 	drawList.reserve(MAX_CHUNKS_IN_MEM);
 	
+	camera->SetPosition(glm::vec3(metaHeader.CX * metaHeader.SCX * 0.5f,
+								  68.0f,
+								  metaHeader.CZ * metaHeader.SCZ * 0.5f));
+
+	doOnce = false;
+	taskAddedCount = 0;
 }
 
 ChunkManager::~ChunkManager()
@@ -19,6 +25,13 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::Update(float dt)
 {
+	if (!doOnce && taskAddedCount != 0 && chunkFutures.size() == 0)
+	{
+		double t = taskTimer.Stop() / 1000.0f;
+		std::cout << "Chunks per second: " << (taskAddedCount / t) << std::endl;
+		doOnce = true;
+	}
+
 	//Get chunk position
 	int cx = (int)camera->GetPosition().x / metaHeader.CX;
 	int cy = (int)camera->GetPosition().y / metaHeader.CY;
@@ -208,6 +221,13 @@ void ChunkManager::AddChunk(int x, int y, int z)
 				pos, chunkLoadPool.AddTask<LoadChunkTask>(&mutex, &chunkResManager, x, y, z, this)));
 
 			existMap[pos] = Resource<Chunk>();
+			taskAddedCount++;
+
+			if (taskAddedCount == 1)
+			{
+				// start timer
+				taskTimer.Start();
+			}
 		}
 		else if (previousTotalChunkCount < MAX_CHUNKS_IN_MEM)
 		{

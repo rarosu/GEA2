@@ -8,6 +8,7 @@
 #include <ThreadPool.h>
 #include <map>
 #include <mutex>
+#include <Timer.h>
 
 class ChunkManager
 {
@@ -168,6 +169,10 @@ private:
 	int nrOfBlocks;
 	int nrOfRenderedChunks;
 	int nrOfTasks;
+
+	bool doOnce;
+	int taskAddedCount;
+	Timer taskTimer;
 
 	ChunkResourceManager chunkResManager;
 	std::mutex mutex;
